@@ -34,10 +34,28 @@ GEMINI_SYSTEM_INSTRUCTION = (
 )
 
 
+class ActionParameters(BaseModel):
+    name: Optional[str] = Field(None, description="Item or target name")
+    quantity: Optional[int] = Field(None, description="Item quantity")
+    category: Optional[str] = Field(None, description="Item category")
+    door_id: Optional[str] = Field(None, description="Identifier for door lock")
+    target_state: Optional[str] = Field(None, description="Target state for lock (locked/unlocked)")
+    title: Optional[str] = Field(None, description="Reminder title")
+    remind_at: Optional[str] = Field(None, description="Reminder time or ISO string")
+    priority: Optional[str] = Field(None, description="Reminder priority (low/medium/high)")
+    target: Optional[str] = Field(None, description="Target entity for destructive action")
+    item_id: Optional[int] = Field(None, description="ID of item to delete")
+    reminder_id: Optional[int] = Field(None, description="ID of reminder to delete")
+    amount: Optional[float] = Field(None, description="Transaction amount")
+    currency: Optional[str] = Field(None, description="Transaction currency")
+    confirmation: Optional[bool] = Field(None, description="Confirmation flag")
+    raw_prompt: Optional[str] = Field(None, description="Raw user prompt")
+
+
 class ProposedAction(BaseModel):
     action_type: str = Field(..., description="Action capability identifier")
     title: str = Field(..., description="Concise human-readable description of the action")
-    parameters: Dict[str, Any] = Field(default_factory=dict, description="Validated parameters dictionary")
+    parameters: ActionParameters = Field(default_factory=ActionParameters, description="Parameters object")
 
 
 class ActionPlanProposal(BaseModel):
@@ -53,7 +71,7 @@ class GeminiAdapter:
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         # Read API key strictly from environment or settings; never log or print it
         self._api_key = api_key or os.getenv("GEMINI_API_KEY") or settings.GEMINI_API_KEY
-        self.model = model or os.getenv("GEMINI_MODEL") or settings.GEMINI_MODEL or "gemini-3.8-flash"
+        self.model = model or os.getenv("GEMINI_MODEL") or settings.GEMINI_MODEL or "gemini-3-flash-preview"
         self._client: Optional[genai.Client] = None
 
     def is_available(self) -> bool:
@@ -106,7 +124,12 @@ class GeminiAdapter:
             for item in proposal.actions:
                 action_type = str(item.action_type).strip()
                 title = str(item.title).strip()
-                params = item.parameters if isinstance(item.parameters, dict) else {}
+                if isinstance(item.parameters, ActionParameters):
+                    params = item.parameters.model_dump(exclude_none=True)
+                elif isinstance(item.parameters, dict):
+                    params = item.parameters
+                else:
+                    params = {}
                 candidates.append((action_type, title, params))
 
             return candidates

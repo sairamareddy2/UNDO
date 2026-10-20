@@ -127,7 +127,12 @@ def test_gemini_proposals_enforce_policy_engine(client):
 
     with patch("app.planner.parser.gemini_adapter.is_available", return_value=True):
         with patch("app.planner.parser.gemini_adapter.generate_action_proposals", return_value=[
-            (a.action_type, a.title, a.parameters) for a in mock_proposal.actions
+            (
+                a.action_type,
+                a.title,
+                a.parameters.model_dump(exclude_none=True) if hasattr(a.parameters, "model_dump") else a.parameters
+            )
+            for a in mock_proposal.actions
         ]):
             response = client.post("/api/plans", json={"prompt": "Complex command"})
             assert response.status_code == 201

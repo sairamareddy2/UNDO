@@ -36,7 +36,12 @@ class PolicyEngine:
     }
 
     @classmethod
-    def evaluate(cls, action_type: str, parameters: Dict[str, Any]) -> PolicyEvaluation:
+    def evaluate(cls, action_type: str, parameters: Any) -> PolicyEvaluation:
+        if hasattr(parameters, "model_dump"):
+            parameters = parameters.model_dump(exclude_none=True)
+        elif not isinstance(parameters, dict):
+            parameters = dict(parameters) if parameters else {}
+
         # 1. Check for explicitly disallowed high-risk/dangerous operations
         if action_type in cls.DANGEROUS_ACTIONS:
             return PolicyEvaluation(

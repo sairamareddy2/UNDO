@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Google Gemini Integration (Official Google GenAI SDK)
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-3.8-flash"
+    GEMINI_MODEL: str = "gemini-3-flash-preview"
 
     # Future integration settings (Roadmap)
     AWS_REGION: str = "us-east-1"

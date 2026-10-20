@@ -4,6 +4,7 @@ import type {
   ApplicationState,
   AuditEvent,
   HealthStatus,
+  McpStatus,
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
@@ -37,9 +38,13 @@ class ApiService {
     }
   }
 
-  // Health
+  // Health & MCP Status
   async getHealth(): Promise<HealthStatus> {
     return this.request<HealthStatus>('/health');
+  }
+
+  async getMcpStatus(): Promise<McpStatus> {
+    return this.request<McpStatus>('/mcp/status');
   }
 
   // Plans

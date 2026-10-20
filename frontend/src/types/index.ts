@@ -90,3 +90,12 @@ export interface HealthStatus {
   database_connected: boolean;
   timestamp: string;
 }
+
+export interface McpStatus {
+  status: 'online' | 'offline';
+  reachable: boolean;
+  endpoint: string;
+  transport: string;
+  tools_count: number;
+  tools: string[];
+}

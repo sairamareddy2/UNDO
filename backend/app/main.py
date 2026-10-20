@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.api import health, plans, actions, state
+from app.api import health, plans, actions, state, mcp
 
 
 @asynccontextmanager
@@ -34,6 +34,7 @@ app.include_router(health.router, prefix="/api", tags=["System"])
 app.include_router(plans.router, prefix="/api", tags=["Action Plans"])
 app.include_router(actions.router, prefix="/api", tags=["Actions"])
 app.include_router(state.router, prefix="/api", tags=["Application State"])
+app.include_router(mcp.router, prefix="/api", tags=["MCP"])
 
 
 @app.get("/")

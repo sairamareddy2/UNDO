@@ -6,6 +6,7 @@ import type {
   ApplicationState,
   AuditEvent,
   HealthStatus,
+  McpStatus,
 } from './types';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -19,6 +20,7 @@ import { CheckCircle2, AlertTriangle, X } from 'lucide-react';
 export const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<NavTab>('DASHBOARD');
   const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [mcpStatus, setMcpStatus] = useState<McpStatus | null>(null);
   const [plans, setPlans] = useState<ActionPlan[]>([]);
   const [activePlan, setActivePlan] = useState<ActionPlan | null>(null);
   const [actions, setActions] = useState<Action[]>([]);
@@ -42,8 +44,9 @@ export const App: React.FC = () => {
 
   const loadAllData = useCallback(async () => {
     try {
-      const [h, p, a, s, aud] = await Promise.all([
+      const [h, m, p, a, s, aud] = await Promise.all([
         api.getHealth().catch(() => null),
+        api.getMcpStatus().catch(() => null),
         api.getPlans().catch(() => []),
         api.listActions().catch(() => []),
         api.getLiveState().catch(() => null),
@@ -51,6 +54,7 @@ export const App: React.FC = () => {
       ]);
 
       if (h) setHealth(h);
+      if (m) setMcpStatus(m);
       setPlans(p);
       setActions(a);
       if (s) setLiveState(s);
@@ -73,10 +77,11 @@ export const App: React.FC = () => {
   useEffect(() => {
     loadAllData();
     const interval = setInterval(() => {
-      // Background poll health & live state
+      // Background poll health, MCP status & live state
       api.getHealth().then(setHealth).catch(() => {});
+      api.getMcpStatus().then(setMcpStatus).catch(() => {});
       api.getLiveState().then(setLiveState).catch(() => {});
-    }, 10000);
+    }, 8000);
     return () => clearInterval(interval);
   }, [loadAllData]);
 
@@ -181,6 +186,7 @@ export const App: React.FC = () => {
       {/* Top App Header */}
       <Header
         health={health}
+        mcpStatus={mcpStatus}
         onResetState={handleResetState}
       />
 

@@ -36,3 +36,8 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Video production scratch media
+artifacts/raw_video/
+artifacts/audio/
+artifacts/*.wav

@@ -4,11 +4,12 @@
 [![React](https://img.shields.io/badge/Frontend-React_19_+_Vite-61DAFB.svg?style=flat&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS_3-38B2AC.svg?style=flat&logo=tailwind-css)](https://tailwindcss.com)
+[![Google GenAI](https://img.shields.io/badge/AI_Planner-Google_GenAI_(SDK_v2.31)-4285F4.svg?style=flat&logo=google)](https://ai.google.dev)
 [![MCP](https://img.shields.io/badge/Protocol-Official_Python_MCP_SDK_(Streamable_HTTP)-8B5CF6.svg?style=flat)](https://modelcontextprotocol.io)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg?style=flat&logo=sqlite)](https://sqlite.org)
-[![Pytest](https://img.shields.io/badge/Testing-Pytest_(33/33_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
+[![Pytest](https://img.shields.io/badge/Testing-Pytest_(39/39_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
 
-**UNDO** is a reliable action-governance and state-reversibility layer for the **Alexa+ simulated web experience track**, featuring a live **Model Context Protocol (MCP)** server with **Streamable HTTP transport** and planned **AWS Builder integration** (Amazon Bedrock with Boto3).
+**UNDO** is a reliable action-governance and state-reversibility layer for the **Alexa+ simulated web experience track**, featuring natural language action planning via **Google Gemini** (`google-genai`), a live **Model Context Protocol (MCP)** server with **Streamable HTTP transport**, and planned **AWS Builder integration** (Amazon Bedrock with Boto3).
 
 It guarantees that agentic operations (modifying household grocery lists, scheduling notifications, and actuating smart home doors) undergo **deterministic policy evaluation** prior to execution, and maintains **before-and-after state snapshots** for atomic, verified rollback.
 
@@ -16,31 +17,81 @@ It guarantees that agentic operations (modifying household grocery lists, schedu
 
 ## Key Features
 
-1. **Official Python MCP Server (Streamable HTTP)**:
+1. **Natural Language Action Planner (Google Gemini & Fallback)**:
+   - Uses the official Google Gen AI Python SDK (`google-genai`).
+   - Converts natural conversational prompts into structured action proposals via Pydantic schemas (`ActionPlanProposal`, `ProposedAction`).
+   - Powered by `gemini-3.8-flash` with JSON schema enforcement.
+   - Robust offline/fallback parser activates automatically if no API key is provided or during transient network/API issues.
+
+2. **Deterministic Policy Engine (Authoritative Gatekeeper)**:
+   - Strictly rule-based safety evaluation (`ALLOW`, `REQUIRE_APPROVAL`, `BLOCK`).
+   - **Zero reliance on unverified LLM risk scores for security decisions**: all Gemini output is treated as untrusted proposals and passed through the deterministic policy engine.
+   - Enforces human approval gates on physical entry points (e.g. smart door locks) and bulk quantity thresholds.
+   - Blocks destructive or unknown commands outright (e.g. `wipe_database`, `transfer_funds`).
+
+3. **Official Python MCP Server (Streamable HTTP)**:
    - Built with the official Python MCP SDK (`mcp>=2.3.0`).
    - Runs a dedicated Streamable HTTP listener on port `8001` (`http://127.0.0.1:8001/mcp`).
    - Exposes 7 typed tools for state inspection, policy-governed mutation, and rollback.
    - Reuses the shared SQLite database and authoritative deterministic policy engine.
    - Real client verification script included (`scripts/mcp_client_demo.py`).
 
-2. **Deterministic Policy Engine**:
-   - Strictly rule-based safety evaluation (`ALLOW`, `REQUIRE_APPROVAL`, `BLOCK`).
-   - Zero reliance on unverified LLM risk scores for security decisions.
-   - Enforces human approval gates on physical entry points (e.g. smart door locks) and bulk quantity thresholds.
-   - Blocks destructive or unknown commands outright (e.g. `wipe_database`, `transfer_funds`).
-
-3. **Reversible Database-backed Operations**:
+4. **Reversible Database-backed Operations**:
    - Real SQLite-persisted entities: Simulated Groceries, Reminders, and Smart Door Locks.
    - Saves previous state and well-defined inverse operations before mutating the database.
    - Enforces strict undo invariants: only executed, reversible actions can be undone; repeated undos are rejected.
    - Every execution and undo produces an immutable event in the audit trail.
 
-4. **Polished Alexa+ Web Dashboard**:
+5. **Polished Alexa+ Web Dashboard**:
    - Dark navy interface (`#080C16`) with restrained violet accents.
    - Live MCP server status indicator showing connection state, transport, and exposed tool count.
    - Chat-style input with one-click simulation templates.
    - Interactive action cards with live policy reasonings and state diff inspections.
    - Live SQLite database state viewer updating in real-time on every execution or rollback.
+
+---
+
+## Google Gemini Integration & Safety Architecture
+
+```
+                       User Prompt / Alexa+ Command
+                                    │
+                                    ▼
+                     ┌─────────────────────────────┐
+                     │     Action Intent Parser    │
+                     └──────────────┬──────────────┘
+                                    │
+               ┌────────────────────┴────────────────────┐
+               ▼                                         ▼
+   [GEMINI_API_KEY Present]                   [No Key / API Error]
+┌──────────────────────────────┐          ┌──────────────────────────────┐
+│  GeminiAdapter (google-genai)│          │  Deterministic Intent Parser │
+│  - gemini-3.8-flash          │          │  - Regex / semantic rules    │
+│  - Structured Pydantic JSON  │          │  - Instant offline fallback  │
+└──────────────┬───────────────┘          └──────────────┬───────────────┘
+               │                                         │
+               └────────────────────┬────────────────────┘
+                                    │ Untrusted Action Proposals
+                                    ▼
+                     ┌─────────────────────────────┐
+                     │ Deterministic Policy Engine │
+                     └──────────────┬──────────────┘
+                                    │
+         ┌──────────────────────────┼──────────────────────────┐
+         ▼                          ▼                          ▼
+      [ALLOW]              [REQUIRE_APPROVAL]               [BLOCK]
+   - Grocery Item          - Smart Door Locks          - Wipe Database
+   - Valid Reminder        - Bulk Quantities (>100)    - Financial Transfer
+         │                          │                          │
+         ▼                          ▼                          ▼
+   Ready to Execute       Requires Human Approval      Rejected Immediately
+   (State Snapshot)        (Dashboard Interface)       (Logged to Audit)
+```
+
+### Key Safety Invariants:
+- **Untrusted Proposals**: The AI model is strictly a semantic planner; it has zero authority to execute actions or bypass policy rules.
+- **Credential Hygiene**: `GEMINI_API_KEY` is loaded through Pydantic BaseSettings from `.env`. The key is never logged, printed, returned in API responses, or committed to git.
+- **Fail-Safe Fallback**: If Gemini encounters a network error, rate limit, or outputs invalid JSON, UNDO logs a sanitized warning and seamlessly falls back to the deterministic parser without failing the user's request.
 
 ---
 
@@ -59,11 +110,6 @@ The MCP server runs independently from the REST API, listening on `http://127.0.
 | `set_door_lock` | `door_id: str`, `target_state: str` | **REQUIRE_APPROVAL** | **Yes** | Queues door action. Tool call cannot bypass approval. |
 | `undo_action` | `action_id: str` | Governed Rollback | N/A | Reverts executed action to prior state in SQLite. |
 
-### Security & Approval Behavior
-- **Never treat a tool call as approval**: When an external agent or client calls `set_door_lock` or requests a bulk order, the tool evaluates policy, records the action as `PENDING`, and returns `{ "status": "REQUIRE_APPROVAL", "executed": false }`. The action remains strictly unexecuted until a human approves it on the UNDO dashboard.
-- **Authoritative Policy**: Invalid inputs (e.g. empty name, negative quantity) or dangerous actions return `{ "status": "BLOCK", "executed": false }`.
-- **Verified State Rollback**: `undo_action` verifies that the target action is in `EXECUTED` state, invokes `UndoManager`, restores the prior SQLite state, records an `ACTION_UNDONE` audit event, and rejects repeated undo calls.
-
 ---
 
 ## Quickstart Guide
@@ -71,8 +117,34 @@ The MCP server runs independently from the REST API, listening on `http://127.0.
 ### Prerequisites
 - Python 3.10+ (tested with Python 3.14)
 - Node.js 18+ (tested with Node v22.18 / npm 10.9)
+- Google AI Studio Gemini API Key (optional; deterministic fallback active if omitted)
 
-### 1. Backend Setup & Run (Port 8000)
+### 1. Configuration (`.env`)
+
+Create a `.env` file in the project root by copying `.env.example`:
+
+```powershell
+cp .env.example .env
+```
+
+Add your Google AI Studio API key:
+```ini
+GEMINI_API_KEY="AIzaSy..."
+GEMINI_MODEL="gemini-3.8-flash"
+```
+
+> **Note**: `.env` is ignored by Git. Never commit API keys.
+
+### 2. Verify Gemini API Integration
+
+You can run the standalone verification script to test live Gemini communication and policy gating:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python scripts/verify_gemini_live.py
+```
+
+### 3. Backend Setup & Run (Port 8000)
 
 ```powershell
 # 1. Activate Python virtual environment:
@@ -87,7 +159,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 - **Health Endpoint**: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
 - **MCP Probe Endpoint**: [http://127.0.0.1:8000/api/mcp/status](http://127.0.0.1:8000/api/mcp/status)
 
-### 2. Standalone MCP Server Run (Port 8001)
+### 4. Standalone MCP Server Run (Port 8001)
 
 In a separate terminal:
 
@@ -98,7 +170,7 @@ python -m app.mcp_server
 ```
 - **Streamable HTTP Endpoint**: `http://127.0.0.1:8001/mcp`
 
-### 3. Frontend Setup & Run (Port 5173)
+### 5. Frontend Setup & Run (Port 5173)
 
 In a separate terminal:
 
@@ -168,43 +240,49 @@ $env:PYTHONPATH="backend"
 python -m pytest backend/tests -v
 ```
 
-### Test Results (33 Passed)
+### Test Results (39 Passed)
 ```text
-backend/tests/test_api.py::test_health_endpoint PASSED                   [  3%]
-backend/tests/test_api.py::test_create_plan_with_allowed_and_approval_actions PASSED [  6%]
-backend/tests/test_api.py::test_approval_and_execution_lifecycle PASSED  [  9%]
-backend/tests/test_api.py::test_reject_action_lifecycle PASSED           [ 12%]
-backend/tests/test_api.py::test_blocked_intent_creation PASSED           [ 15%]
-backend/tests/test_execution.py::test_execute_add_grocery_success PASSED [ 18%]
-backend/tests/test_execution.py::test_execute_create_reminder_success PASSED [ 21%]
-backend/tests/test_execution.py::test_execute_door_lock_success PASSED   [ 24%]
-backend/tests/test_execution.py::test_cannot_execute_unapproved_action PASSED [ 27%]
-backend/tests/test_execution.py::test_cannot_execute_blocked_action PASSED [ 30%]
-backend/tests/test_mcp.py::test_mcp_tool_discovery[asyncio] PASSED       [ 33%]
-backend/tests/test_mcp.py::test_mcp_call_readonly_tools[asyncio] PASSED  [ 36%]
-backend/tests/test_mcp.py::test_mcp_allowed_state_change_and_persistence[asyncio] PASSED [ 39%]
-backend/tests/test_mcp.py::test_mcp_approval_gating_cannot_be_bypassed[asyncio] PASSED [ 42%]
-backend/tests/test_mcp.py::test_mcp_blocked_action_rejected[asyncio] PASSED [ 45%]
-backend/tests/test_mcp.py::test_mcp_undo_restores_prior_state[asyncio] PASSED [ 48%]
-backend/tests/test_policy.py::test_add_grocery_item_allowed PASSED       [ 51%]
-backend/tests/test_policy.py::test_add_grocery_bulk_requires_approval PASSED [ 54%]
-backend/tests/test_policy.py::test_add_grocery_invalid_name_blocked PASSED [ 57%]
-backend/tests/test_policy.py::test_add_grocery_negative_quantity_blocked PASSED [ 60%]
-backend/tests/test_policy.py::test_create_reminder_allowed PASSED        [ 63%]
-backend/tests/test_policy.py::test_create_reminder_missing_title_blocked PASSED [ 66%]
-backend/tests/test_policy.py::test_create_reminder_missing_schedule_blocked PASSED [ 69%]
-backend/tests/test_policy.py::test_door_lock_requires_approval PASSED    [ 72%]
-backend/tests/test_policy.py::test_door_lock_unknown_location_blocked PASSED [ 75%]
-backend/tests/test_policy.py::test_door_lock_invalid_state_blocked PASSED [ 78%]
-backend/tests/test_policy.py::test_dangerous_operations_strictly_blocked PASSED [ 81%]
-backend/tests/test_policy.py::test_unknown_tool_strictly_blocked PASSED  [ 84%]
-backend/tests/test_undo.py::test_undo_add_grocery PASSED                 [ 87%]
-backend/tests/test_undo.py::test_undo_door_lock_restores_previous_state PASSED [ 90%]
-backend/tests/test_undo.py::test_cannot_undo_twice PASSED                [ 93%]
-backend/tests/test_undo.py::test_cannot_undo_unexecuted_action PASSED    [ 96%]
+backend/tests/test_api.py::test_health_endpoint PASSED                   [  2%]
+backend/tests/test_api.py::test_create_plan_with_allowed_and_approval_actions PASSED [  5%]
+backend/tests/test_api.py::test_approval_and_execution_lifecycle PASSED  [  7%]
+backend/tests/test_api.py::test_reject_action_lifecycle PASSED           [ 10%]
+backend/tests/test_api.py::test_blocked_intent_creation PASSED           [ 12%]
+backend/tests/test_execution.py::test_execute_add_grocery_success PASSED [ 15%]
+backend/tests/test_execution.py::test_execute_create_reminder_success PASSED [ 17%]
+backend/tests/test_execution.py::test_execute_door_lock_success PASSED   [ 20%]
+backend/tests/test_execution.py::test_cannot_execute_unapproved_action PASSED [ 23%]
+backend/tests/test_execution.py::test_cannot_execute_blocked_action PASSED [ 25%]
+backend/tests/test_gemini.py::test_gemini_adapter_availability PASSED    [ 28%]
+backend/tests/test_gemini.py::test_gemini_adapter_successful_response_mocked PASSED [ 30%]
+backend/tests/test_gemini.py::test_gemini_adapter_malformed_model_output PASSED [ 33%]
+backend/tests/test_gemini.py::test_gemini_adapter_api_error_handling PASSED [ 35%]
+backend/tests/test_gemini.py::test_parser_fallback_to_deterministic_when_gemini_fails PASSED [ 38%]
+backend/tests/test_gemini.py::test_gemini_proposals_enforce_policy_engine PASSED [ 41%]
+backend/tests/test_mcp.py::test_mcp_tool_discovery[asyncio] PASSED       [ 43%]
+backend/tests/test_mcp.py::test_mcp_call_readonly_tools[asyncio] PASSED  [ 46%]
+backend/tests/test_mcp.py::test_mcp_allowed_state_change_and_persistence[asyncio] PASSED [ 48%]
+backend/tests/test_mcp.py::test_mcp_approval_gating_cannot_be_bypassed[asyncio] PASSED [ 51%]
+backend/tests/test_mcp.py::test_mcp_blocked_action_rejected[asyncio] PASSED [ 53%]
+backend/tests/test_mcp.py::test_mcp_undo_restores_prior_state[asyncio] PASSED [ 56%]
+backend/tests/test_policy.py::test_add_grocery_item_allowed PASSED       [ 58%]
+backend/tests/test_policy.py::test_add_grocery_bulk_requires_approval PASSED [ 61%]
+backend/tests/test_policy.py::test_add_grocery_invalid_name_blocked PASSED [ 64%]
+backend/tests/test_policy.py::test_add_grocery_negative_quantity_blocked PASSED [ 66%]
+backend/tests/test_policy.py::test_create_reminder_allowed PASSED        [ 69%]
+backend/tests/test_policy.py::test_create_reminder_missing_title_blocked PASSED [ 71%]
+backend/tests/test_policy.py::test_create_reminder_missing_schedule_blocked PASSED [ 74%]
+backend/tests/test_policy.py::test_door_lock_requires_approval PASSED    [ 76%]
+backend/tests/test_policy.py::test_door_lock_unknown_location_blocked PASSED [ 79%]
+backend/tests/test_policy.py::test_door_lock_invalid_state_blocked PASSED [ 82%]
+backend/tests/test_policy.py::test_dangerous_operations_strictly_blocked PASSED [ 84%]
+backend/tests/test_policy.py::test_unknown_tool_strictly_blocked PASSED  [ 87%]
+backend/tests/test_undo.py::test_undo_add_grocery PASSED                 [ 89%]
+backend/tests/test_undo.py::test_undo_door_lock_restores_previous_state PASSED [ 92%]
+backend/tests/test_undo.py::test_cannot_undo_twice PASSED                [ 94%]
+backend/tests/test_undo.py::test_cannot_undo_unexecuted_action PASSED    [ 97%]
 backend/tests/test_undo.py::test_cannot_undo_non_reversible_action PASSED [100%]
 
-============================= 33 passed in 1.28s ==============================
+============================= 39 passed in 1.45s ==============================
 ```
 
 ---

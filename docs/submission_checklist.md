@@ -15,7 +15,7 @@ This document details all deliverables, verification checks, feedback, and frict
 | **State Reversibility (Undo)** | Exact before-and-after SQLite state snapshots with inverse operations. Rollback restores previous state; repeat reversals are strictly prevented. | ✅ Verified in SQLite & MCP |
 | **Official MCP Server** | Real Model Context Protocol server built with official Python MCP SDK (`mcp>=2.3.0`) over Streamable HTTP on port 8001 (`/mcp`). | ✅ Verified (`mcp_client_demo.py`) |
 | **Natural Language Planning** | Google Gemini API integration using official `google-genai` SDK (`gemini-3-flash-preview`) with structured Pydantic schema and instant offline fallback. | ✅ Verified (`verify_gemini_live.py`) |
-| **Future Integrations** | Amazon Bedrock adapter scaffolded (`backend/app/integrations/bedrock_adapter.py`) with Boto3 configuration ready for cloud deployment. | ✅ Documented in roadmap |
+| **Future Integrations** | Amazon Bedrock adapter scaffolded (`backend/app/integrations/bedrock_adapter.py`) with Boto3 configuration ready for cloud deployment. | ✅ Documented in roadmap (Not claiming AWS Builder mini-challenge prize) |
 | **Open Source License** | Full repository covered by standard open-source MIT License. | ✅ Included (`LICENSE`) |
 | **Security & Secrets Hygiene** | All API keys and secrets read from environment variables; `.env` is git-ignored; zero hardcoded credentials. | ✅ Verified via git audit |
 

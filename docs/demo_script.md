@@ -1,45 +1,47 @@
 # UNDO — Hackathon Demonstration Video Script
 
 > **Track**: Alexa+ Simulated Web Experience Track  
-> **Target Video Length**: 2 minutes (under 3-minute hard ceiling)  
+> **Target Video Length**: 2 minutes 30 seconds (leaving a comfortable margin below the 3-minute limit)  
 > **Key Architecture Highlights**: Google Gemini Planner (`google-genai`), Official Python MCP SDK (Streamable HTTP), SQLite Persistence, Deterministic Policy Engine, Atomic State Reversibility.
+> **Scope Notice**: Pure software simulation for the Alexa+ Simulated Web Track. No physical locks or proprietary Echo hardware required.
 
 ---
 
-## 1. Project Introduction (0:00 – 0:25)
+## 1. Project Introduction & Dashboard Architecture (0:00 – 0:25)
 
 ### On-Screen:
 - Web browser open to **UNDO Dashboard** (`http://localhost:5173`).
-- Point mouse to the top header badges: `Day 4 · Hackathon Ready`, `SQLite Active`, `MCP: 7 Tools`, and `Gemini Active`.
+- Point mouse to top header badges: `Day 4 · Hackathon Ready` (or Hackathon Ready), `SQLite Active`, `MCP: 7 Tools`, and `gemini-3-flash-preview`.
+- Hover over the Live Application State showing Doors, Groceries, and Reminders.
 
 ### Narration:
-> *"Hi everyone, this is **UNDO** — an action-governance and state-reversibility layer for the Alexa+ simulated web experience track.*  
-> *When conversational AI agents interact with the physical and digital world, LLMs can hallucinate parameters, misinterpret risk, or attempt irreversible actions.*  
+> *"Hi everyone, this is **UNDO** — a reversible, risk-aware action governance engine built for the Alexa+ simulated web experience track.*  
+> *When conversational agents interact with household devices and digital accounts, LLMs can hallucinate parameters or attempt destructive operations.*  
 > *UNDO solves this with a two-pillar safety architecture:*  
-> *First, every user request is parsed into structured candidate actions using **Google Gemini** or an external agent connected via the official **Python MCP SDK over Streamable HTTP**.*  
-> *Second, before any tool executes, it must pass through an authoritative **deterministic policy engine** that strictly enforces ALLOW, REQUIRE_APPROVAL, and BLOCK rules, with verified database snapshots for instantaneous, verifiable rollback."*
+> *First, user intent is parsed into typed action proposals using **Google Gemini** or external agents connecting via the official **Python MCP SDK over Streamable HTTP**.*  
+> *Second, before anything executes, all proposals must pass through an authoritative **deterministic policy engine** that enforces ALLOW, REQUIRE_APPROVAL, and BLOCK rules, saving pre-execution snapshots for guaranteed rollback."*
 
 ---
 
 ## 2. Demonstration 1: Allowed Action & Instant Execution (0:25 – 0:50)
 
 ### On-Screen:
-1. Click the quick template **"Add Groceries"** in the chat bar (or type: `Add 2 cartons of organic almond milk to my grocery list`).
+1. Click the quick template **"Add Groceries"** in the chat bar (prompt: `Add 2 cartons of organic almond milk to my grocery list`).
 2. Click **Propose Plan**.
 3. Watch the proposal appear:
    - Action: `add_grocery_item`
    - Policy: <span style="color:#10b981;font-weight:bold;">ALLOW</span>
    - Reason: *"Standard household grocery list addition within verified safe quantity limits."*
 4. Click **Execute Action**.
-5. Switch to **Dashboard** tab to show the Live Household State: `Organic Almond Milk` (quantity: 2) appears in SQLite.
+5. Switch to **Dashboard** tab: `Organic Almond Milk` (quantity: 2) appears in the live SQLite table.
 
 ### Narration:
-> *"Let's test an everyday instruction: adding organic almond milk. Gemini parses the natural language prompt into typed parameters. The policy engine inspects the quantity and category, confirms it is within safe bounds, and flags it as ALLOW.*  
-> *We click Execute — the action commits to SQLite, captures before-and-after snapshots, and updates our live household state in real time."*
+> *"Let's test an everyday instruction: adding organic almond milk. Gemini parses the natural language prompt into typed parameters. The deterministic policy engine checks the quantity and category, confirms it is within safe bounds, and flags it as ALLOW.*  
+> *When we click Execute, the action commits to SQLite, captures before-and-after snapshots, and updates our live household state in real time."*
 
 ---
 
-## 3. Demonstration 2: Human-in-the-Loop Approval Gating (0:50 – 1:15)
+## 3. Demonstration 2: Human-in-the-Loop Door Approval Gate (0:50 – 1:15)
 
 ### On-Screen:
 1. Return to the chat bar and click **"Unlock Door (Approval)"** (prompt: `Unlock the front door`).
@@ -49,13 +51,13 @@
    - Policy: <span style="color:#f59e0b;font-weight:bold;">REQUIRE_APPROVAL</span>
    - Status: `PENDING`
    - Reason: *"Physical security impact: Changing front door lock state to 'unlocked' requires explicit confirmation."*
-4. Attempt to execute or highlight that no execution occurs automatically.
+4. Show that execution is strictly gated — no execution button exists until approved.
 5. Click the green **Approve** button, then click **Execute Action**.
-6. Show the **Dashboard** $\rightarrow$ `Front Door Lock` transitions to `UNLOCKED`.
+6. Switch to **Dashboard** $\rightarrow$ `Front Door Lock` transitions to `UNLOCKED`.
 
 ### Narration:
-> *"Now, let's ask Alexa+ to unlock the front door. Even though the LLM generated the parameters, an AI model should never have unilateral authority over physical entry points.*  
-> *The deterministic policy engine classifies this as REQUIRE_APPROVAL. It is impossible for an agent or MCP client to bypass this gate — execution is strictly blocked until a human explicitly reviews and approves the request on the dashboard."*
+> *"Now, let's ask Alexa+ to unlock the front door. Even though an LLM generated the parameters, an AI model should never have unilateral authority over physical entry points.*  
+> *The policy engine classifies this as REQUIRE_APPROVAL. It is impossible for an agent or MCP client to bypass this gate — execution is strictly blocked until a human explicitly reviews and approves the request on the dashboard."*
 
 ---
 
@@ -69,10 +71,10 @@
    - Policy: <span style="color:#ef4444;font-weight:bold;">BLOCK</span>
    - Status: `BLOCKED`
    - Reason: *"Disallowed operation: 'wipe_database' is strictly prohibited by security policy."*
-4. Note that there are **no execution buttons** — the action is dead-on-arrival and logged to the immutable audit trail.
+4. Note that there are **no execution controls** — the action is dead-on-arrival and logged to the audit ledger.
 
 ### Narration:
-> *"What about malicious or catastrophic commands? If someone asks to wipe the database or transfer funds, the policy engine blocks the request immediately. No database queries run, no execution controls exist, and a security alert is recorded in the audit trail."*
+> *"What about malicious or catastrophic commands? If someone asks to wipe the database or transfer funds, the policy engine blocks the request outright. Zero database queries run, zero execution buttons appear, and a security alert is recorded in the immutable audit trail."*
 
 ---
 
@@ -83,25 +85,39 @@
 2. Filter by **Completed Actions**.
 3. Locate the `add_grocery_item` (Organic Almond Milk) action from Demonstration 1.
 4. Click **Undo Action**.
-5. Show the banner: *"Restored to Prior State"*.
-6. Switch to the **Dashboard** tab: `Organic Almond Milk` has vanished from the active SQLite database!
-7. Point out that the Undo button is now disabled, preventing duplicate reversals.
+5. Show the badge transition: *"Restored to Prior State"*.
+6. Switch to the **Dashboard** tab: `Organic Almond Milk` has been cleanly removed from the active SQLite database!
+7. Point out that the Undo button is disabled, preventing duplicate reversals.
 
 ### Narration:
 > *"Here is UNDO's signature capability: true state reversibility. Because every executed mutating operation stores its exact pre-execution state, we can click 'Undo Action' at any time.*  
-> *The backend restores the prior database state atomically, records an ACTION_UNDONE audit event, and locks out repeat reversals. The almond milk is gone, and the database is back to its exact original state."*
+> *The backend restores the prior database state atomically, records an ACTION_UNDONE audit event, and locks out repeat reversals. The almond milk is gone, and SQLite is back to its exact baseline."*
 
 ---
 
-## 6. Real Integration Summary & Wrap-Up (1:55 – 2:05)
+## 6. Demonstration 5: Live Model Context Protocol (MCP) Streamable HTTP Tools (1:55 – 2:15)
 
 ### On-Screen:
-- Click the **MCP Pill** in the header to expand the 7 exposed tools (`list_groceries`, `get_household_state`, `undo_action`, etc.).
-- Show terminal with pytest passing all 45 automated tests.
+1. Click the **MCP Pill** in the top header (`MCP: 7 Tools`).
+2. Show the dropdown listing the 7 live exposed tools:
+   - `list_groceries`, `get_household_state`, `get_action_history`, `add_grocery_item`, `create_reminder`, `set_door_lock`, `undo_action`.
+3. (Optional / Picture-in-Picture) Show terminal running `python scripts/mcp_client_demo.py` connecting over `http://127.0.0.1:8001/mcp`, calling `get_household_state`, executing an allowed tool, and testing approval gating.
 
 ### Narration:
-> *"Under the hood, UNDO is powered by Google Gemini via the official google-genai SDK, a real Streamable HTTP MCP server on port 8001, SQLite persistence, and 45 passing automated tests.*  
-> *Thank you for watching the UNDO demonstration!"*
+> *"UNDO is also an open ecosystem for autonomous agents. Running on port 8001 is a standalone Model Context Protocol server using the official Python MCP SDK with Streamable HTTP transport.*  
+> *External agents discover all 7 governed tools. Even over MCP, the policy engine is strictly authoritative — any tool requiring approval queues a pending action rather than unlocking doors directly."*
+
+---
+
+## 7. Conclusion & Architecture Wrap-Up (2:15 – 2:30)
+
+### On-Screen:
+- Show the test suite running in terminal (`45 passed in ~8s`).
+- Return to Dashboard view showing healthy system status.
+
+### Narration:
+> *"Under the hood, UNDO is built with FastAPI, SQLite, React 19, Google Gemini 3 Flash, the official Python MCP SDK, and 45 passing automated tests.*  
+> *UNDO brings safety, transparency, and true reversibility to agentic assistants. Thank you for watching!"*
 
 ---
 

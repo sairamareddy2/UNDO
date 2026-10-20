@@ -71,7 +71,7 @@ class GeminiAdapter:
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         # Read API key strictly from environment or settings; never log or print it
         self._api_key = api_key or os.getenv("GEMINI_API_KEY") or settings.GEMINI_API_KEY
-        self.model = model or os.getenv("GEMINI_MODEL") or settings.GEMINI_MODEL or "gemini-3-flash-preview"
+        self.model = model or os.getenv("GEMINI_MODEL") or settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
         self._client: Optional[genai.Client] = None
 
     def is_available(self) -> bool:
@@ -94,52 +94,65 @@ class GeminiAdapter:
         if not self.is_available():
             return []
 
-        try:
-            client = self._get_client()
-            config = types.GenerateContentConfig(
-                system_instruction=GEMINI_SYSTEM_INSTRUCTION,
-                response_mime_type="application/json",
-                response_schema=ActionPlanProposal,
-                temperature=0.1,
-            )
+        # Candidate models with automatic failover if one hits per-model quota limits
+        candidate_models = [self.model]
+        for fallback_m in ["gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-flash-latest"]:
+            if fallback_m not in candidate_models:
+                candidate_models.append(fallback_m)
 
-            response = client.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config=config,
-            )
+        for model_name in candidate_models:
+            try:
+                client = self._get_client()
+                config = types.GenerateContentConfig(
+                    system_instruction=GEMINI_SYSTEM_INSTRUCTION,
+                    response_mime_type="application/json",
+                    response_schema=ActionPlanProposal,
+                    temperature=0.1,
+                )
 
-            # Extract structured response
-            proposal: Optional[ActionPlanProposal] = None
-            if hasattr(response, "parsed") and isinstance(response.parsed, ActionPlanProposal):
-                proposal = response.parsed
-            elif hasattr(response, "text") and response.text:
-                proposal = ActionPlanProposal.model_validate_json(response.text)
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=config,
+                )
 
-            if not proposal or not proposal.actions:
-                return []
+                # Extract structured response
+                proposal: Optional[ActionPlanProposal] = None
+                if hasattr(response, "parsed") and isinstance(response.parsed, ActionPlanProposal):
+                    proposal = response.parsed
+                elif hasattr(response, "text") and response.text:
+                    proposal = ActionPlanProposal.model_validate_json(response.text)
 
-            # Format into validated candidate tuples
-            candidates: List[Tuple[str, str, Dict[str, Any]]] = []
-            for item in proposal.actions:
-                action_type = str(item.action_type).strip()
-                title = str(item.title).strip()
-                if isinstance(item.parameters, ActionParameters):
-                    params = item.parameters.model_dump(exclude_none=True)
-                elif isinstance(item.parameters, dict):
-                    params = item.parameters
-                else:
-                    params = {}
-                candidates.append((action_type, title, params))
+                if not proposal or not proposal.actions:
+                    continue
 
-            return candidates
+                # Format into validated candidate tuples
+                candidates: List[Tuple[str, str, Dict[str, Any]]] = []
+                for item in proposal.actions:
+                    action_type = str(item.action_type).strip()
+                    title = str(item.title).strip()
+                    if isinstance(item.parameters, ActionParameters):
+                        params = item.parameters.model_dump(exclude_none=True)
+                    elif isinstance(item.parameters, dict):
+                        params = item.parameters
+                    else:
+                        params = {}
+                    candidates.append((action_type, title, params))
 
-        except (ValidationError, json.JSONDecodeError) as e:
-            logger.warning(f"Gemini returned malformed structured output: {e}")
-            return []
-        except Exception as e:
-            logger.warning(f"Gemini API request error: {e}")
-            return []
+                return candidates
+
+            except (ValidationError, json.JSONDecodeError) as e:
+                logger.warning(f"Gemini returned malformed structured output on {model_name}: {e}")
+                continue
+            except Exception as e:
+                err_str = str(e)
+                if "RESOURCE_EXHAUSTED" in err_str or "429" in err_str:
+                    logger.warning(f"Gemini quota exhausted for model {model_name}, trying alternative model...")
+                    continue
+                logger.warning(f"Gemini API request error on {model_name}: {e}")
+                break
+
+        return []
 
 
 # Global singleton instance

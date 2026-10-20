@@ -129,8 +129,8 @@ cp .env.example .env
 
 Add your Google AI Studio API key:
 ```ini
-GEMINI_API_KEY="AIzaSy..."
-GEMINI_MODEL="gemini-3.8-flash"
+GEMINI_API_KEY="your_google_ai_studio_key_here"
+GEMINI_MODEL="gemini-3-flash-preview"
 ```
 
 > **Note**: `.env` is ignored by Git. Never commit API keys.
@@ -295,15 +295,23 @@ backend/tests/test_undo.py::test_cannot_undo_non_reversible_action PASSED [100%]
 
 ## Hackathon Demo & Submission Materials
 
-1. **[Demo Video Script (2-minute)](docs/demo_script.md)**: Narration and on-screen workflow steps covering Allowed Actions, Approval Gating, Security Blocks, and Undo Reversibility.
+1. **[Demo Video Script (~2:30)](docs/demo_script.md)**: Narration and on-screen workflow steps covering Allowed Actions, Approval Gating, Security Blocks, and Undo Reversibility.
 2. **[Submission Checklist & Track Guide](docs/submission_checklist.md)**: Deliverables matrix, feedback on AI agent governance, and developer friction log.
 3. **[Architecture Specification](docs/architecture.md)**: Detailed schema and state-machine transitions.
 4. **[Open Source License](LICENSE)**: MIT License.
-```
+
+---
+
+## Simulated Environment & Scope Disclosures
+
+> [!IMPORTANT]
+> **Simulated Alexa+ Web Experience**: UNDO models smart home device actuation (door locks), household management (groceries), and scheduling (reminders) within a simulated web sandbox. It does **not** connect to physical hardware locks, live payment rails, or proprietary Amazon Echo hardware.
+>
+> **AWS Builder Mini-Challenge Scope**: An Amazon Bedrock adapter using Boto3 is scaffolded under [`backend/app/integrations/bedrock_adapter.py`](backend/app/integrations/bedrock_adapter.py) with typed parameter definitions for future cloud deployment. However, because live AWS Bedrock calls were not active during this milestone, UNDO is submitted strictly to the **Alexa+ Simulated Web Experience Track** and does not claim AWS Builder mini-challenge prize eligibility.
 
 ---
 
 ## Known Limitations
 
-1. **Amazon Bedrock Integration**: Boto3 client adapter is scaffolded under [`backend/app/integrations/bedrock_adapter.py`](file:///C:/Users/ADMIN/Downloads/undo/backend/app/integrations/bedrock_adapter.py) with full parameter specifications, but active AWS API calls are scheduled for the next milestone.
+1. **Amazon Bedrock Integration**: Boto3 client adapter is scaffolded under [`backend/app/integrations/bedrock_adapter.py`](backend/app/integrations/bedrock_adapter.py) with full parameter specifications, scheduled for future production deployment.
 2. **Approval over MCP**: By design, high-risk tools return `REQUIRE_APPROVAL` and write a pending action to the database. External MCP clients currently cannot deliver an interactive human approval token over the standard tool response; approval occurs via the UNDO Web Dashboard.

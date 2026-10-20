@@ -97,8 +97,13 @@ def approve_action(
 
 
 @router.post("/actions/{action_id}/reject", response_model=ActionResponse)
-def reject_action(action_id: str, db: Session = Depends(get_db)):
-    approval_payload = ActionApprovalRequest(approved=False, notes="User manually rejected action.")
+def reject_action(
+    action_id: str,
+    payload: Optional[ActionApprovalRequest] = None,
+    db: Session = Depends(get_db)
+):
+    rejection_notes = payload.notes if payload and payload.notes else "User manually rejected action."
+    approval_payload = ActionApprovalRequest(approved=False, notes=rejection_notes)
     return approve_action(action_id=action_id, payload=approval_payload, db=db)
 
 

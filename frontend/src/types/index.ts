@@ -88,6 +88,8 @@ export interface HealthStatus {
   app: string;
   environment: string;
   database_connected: boolean;
+  gemini_connected?: boolean;
+  gemini_model?: string | null;
   timestamp: string;
 }
 

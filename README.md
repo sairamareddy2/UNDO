@@ -7,7 +7,7 @@
 [![Google GenAI](https://img.shields.io/badge/AI_Planner-Google_GenAI_(SDK_v2.31)-4285F4.svg?style=flat&logo=google)](https://ai.google.dev)
 [![MCP](https://img.shields.io/badge/Protocol-Official_Python_MCP_SDK_(Streamable_HTTP)-8B5CF6.svg?style=flat)](https://modelcontextprotocol.io)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg?style=flat&logo=sqlite)](https://sqlite.org)
-[![Pytest](https://img.shields.io/badge/Testing-Pytest_(39/39_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
+[![Pytest](https://img.shields.io/badge/Testing-Pytest_(45/45_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
 
 **UNDO** is a reliable action-governance and state-reversibility layer for the **Alexa+ simulated web experience track**, featuring natural language action planning via **Google Gemini** (`google-genai`), a live **Model Context Protocol (MCP)** server with **Streamable HTTP transport**, and planned **AWS Builder integration** (Amazon Bedrock with Boto3).
 
@@ -20,7 +20,7 @@ It guarantees that agentic operations (modifying household grocery lists, schedu
 1. **Natural Language Action Planner (Google Gemini & Fallback)**:
    - Uses the official Google Gen AI Python SDK (`google-genai`).
    - Converts natural conversational prompts into structured action proposals via Pydantic schemas (`ActionPlanProposal`, `ProposedAction`).
-   - Powered by `gemini-3.8-flash` with JSON schema enforcement.
+   - Powered by `gemini-3-flash-preview` with typed JSON schema enforcement.
    - Robust offline/fallback parser activates automatically if no API key is provided or during transient network/API issues.
 
 2. **Deterministic Policy Engine (Authoritative Gatekeeper)**:
@@ -240,49 +240,65 @@ $env:PYTHONPATH="backend"
 python -m pytest backend/tests -v
 ```
 
-### Test Results (39 Passed)
+### Test Results (45 Passed)
 ```text
 backend/tests/test_api.py::test_health_endpoint PASSED                   [  2%]
-backend/tests/test_api.py::test_create_plan_with_allowed_and_approval_actions PASSED [  5%]
-backend/tests/test_api.py::test_approval_and_execution_lifecycle PASSED  [  7%]
-backend/tests/test_api.py::test_reject_action_lifecycle PASSED           [ 10%]
-backend/tests/test_api.py::test_blocked_intent_creation PASSED           [ 12%]
-backend/tests/test_execution.py::test_execute_add_grocery_success PASSED [ 15%]
-backend/tests/test_execution.py::test_execute_create_reminder_success PASSED [ 17%]
-backend/tests/test_execution.py::test_execute_door_lock_success PASSED   [ 20%]
-backend/tests/test_execution.py::test_cannot_execute_unapproved_action PASSED [ 23%]
-backend/tests/test_execution.py::test_cannot_execute_blocked_action PASSED [ 25%]
-backend/tests/test_gemini.py::test_gemini_adapter_availability PASSED    [ 28%]
-backend/tests/test_gemini.py::test_gemini_adapter_successful_response_mocked PASSED [ 30%]
-backend/tests/test_gemini.py::test_gemini_adapter_malformed_model_output PASSED [ 33%]
-backend/tests/test_gemini.py::test_gemini_adapter_api_error_handling PASSED [ 35%]
-backend/tests/test_gemini.py::test_parser_fallback_to_deterministic_when_gemini_fails PASSED [ 38%]
-backend/tests/test_gemini.py::test_gemini_proposals_enforce_policy_engine PASSED [ 41%]
-backend/tests/test_mcp.py::test_mcp_tool_discovery[asyncio] PASSED       [ 43%]
-backend/tests/test_mcp.py::test_mcp_call_readonly_tools[asyncio] PASSED  [ 46%]
-backend/tests/test_mcp.py::test_mcp_allowed_state_change_and_persistence[asyncio] PASSED [ 48%]
-backend/tests/test_mcp.py::test_mcp_approval_gating_cannot_be_bypassed[asyncio] PASSED [ 51%]
-backend/tests/test_mcp.py::test_mcp_blocked_action_rejected[asyncio] PASSED [ 53%]
-backend/tests/test_mcp.py::test_mcp_undo_restores_prior_state[asyncio] PASSED [ 56%]
-backend/tests/test_policy.py::test_add_grocery_item_allowed PASSED       [ 58%]
-backend/tests/test_policy.py::test_add_grocery_bulk_requires_approval PASSED [ 61%]
-backend/tests/test_policy.py::test_add_grocery_invalid_name_blocked PASSED [ 64%]
-backend/tests/test_policy.py::test_add_grocery_negative_quantity_blocked PASSED [ 66%]
-backend/tests/test_policy.py::test_create_reminder_allowed PASSED        [ 69%]
-backend/tests/test_policy.py::test_create_reminder_missing_title_blocked PASSED [ 71%]
-backend/tests/test_policy.py::test_create_reminder_missing_schedule_blocked PASSED [ 74%]
-backend/tests/test_policy.py::test_door_lock_requires_approval PASSED    [ 76%]
-backend/tests/test_policy.py::test_door_lock_unknown_location_blocked PASSED [ 79%]
-backend/tests/test_policy.py::test_door_lock_invalid_state_blocked PASSED [ 82%]
-backend/tests/test_policy.py::test_dangerous_operations_strictly_blocked PASSED [ 84%]
-backend/tests/test_policy.py::test_unknown_tool_strictly_blocked PASSED  [ 87%]
-backend/tests/test_undo.py::test_undo_add_grocery PASSED                 [ 89%]
-backend/tests/test_undo.py::test_undo_door_lock_restores_previous_state PASSED [ 92%]
-backend/tests/test_undo.py::test_cannot_undo_twice PASSED                [ 94%]
+backend/tests/test_api.py::test_create_plan_with_allowed_and_approval_actions PASSED [  4%]
+backend/tests/test_api.py::test_approval_and_execution_lifecycle PASSED  [  6%]
+backend/tests/test_api.py::test_reject_action_lifecycle PASSED           [  8%]
+backend/tests/test_api.py::test_blocked_intent_creation PASSED           [ 11%]
+backend/tests/test_e2e_workflows.py::test_e2e_grocery_workflow_allow_execute_undo_invariants PASSED [ 13%]
+backend/tests/test_e2e_workflows.py::test_e2e_door_unlock_require_approval_gate PASSED [ 15%]
+backend/tests/test_e2e_workflows.py::test_e2e_dangerous_request_blocked PASSED [ 17%]
+backend/tests/test_e2e_workflows.py::test_e2e_gemini_unavailable_or_quota_fallback PASSED [ 20%]
+backend/tests/test_e2e_workflows.py::test_e2e_gemini_malformed_model_output PASSED [ 22%]
+backend/tests/test_e2e_workflows.py::test_e2e_action_history_ledger_accuracy PASSED [ 24%]
+backend/tests/test_execution.py::test_execute_add_grocery_success PASSED [ 26%]
+backend/tests/test_execution.py::test_execute_create_reminder_success PASSED [ 28%]
+backend/tests/test_execution.py::test_execute_door_lock_success PASSED   [ 31%]
+backend/tests/test_execution.py::test_cannot_execute_unapproved_action PASSED [ 33%]
+backend/tests/test_execution.py::test_cannot_execute_blocked_action PASSED [ 35%]
+backend/tests/test_gemini.py::test_gemini_adapter_availability PASSED    [ 37%]
+backend/tests/test_gemini.py::test_gemini_adapter_successful_response_mocked PASSED [ 40%]
+backend/tests/test_gemini.py::test_gemini_adapter_malformed_model_output PASSED [ 42%]
+backend/tests/test_gemini.py::test_gemini_adapter_api_error_handling PASSED [ 44%]
+backend/tests/test_gemini.py::test_parser_fallback_to_deterministic_when_gemini_fails PASSED [ 46%]
+backend/tests/test_gemini.py::test_gemini_proposals_enforce_policy_engine PASSED [ 48%]
+backend/tests/test_mcp.py::test_mcp_tool_discovery[asyncio] PASSED       [ 51%]
+backend/tests/test_mcp.py::test_mcp_call_readonly_tools[asyncio] PASSED  [ 53%]
+backend/tests/test_mcp.py::test_mcp_allowed_state_change_and_persistence[asyncio] PASSED [ 55%]
+backend/tests/test_mcp.py::test_mcp_approval_gating_cannot_be_bypassed[asyncio] PASSED [ 57%]
+backend/tests/test_mcp.py::test_mcp_blocked_action_rejected[asyncio] PASSED [ 60%]
+backend/tests/test_mcp.py::test_mcp_undo_restores_prior_state[asyncio] PASSED [ 62%]
+backend/tests/test_policy.py::test_add_grocery_item_allowed PASSED       [ 64%]
+backend/tests/test_policy.py::test_add_grocery_bulk_requires_approval PASSED [ 66%]
+backend/tests/test_policy.py::test_add_grocery_invalid_name_blocked PASSED [ 68%]
+backend/tests/test_policy.py::test_add_grocery_negative_quantity_blocked PASSED [ 71%]
+backend/tests/test_policy.py::test_create_reminder_allowed PASSED        [ 73%]
+backend/tests/test_policy.py::test_create_reminder_missing_title_blocked PASSED [ 75%]
+backend/tests/test_policy.py::test_create_reminder_missing_schedule_blocked PASSED [ 77%]
+backend/tests/test_policy.py::test_door_lock_requires_approval PASSED    [ 80%]
+backend/tests/test_policy.py::test_door_lock_unknown_location_blocked PASSED [ 82%]
+backend/tests/test_policy.py::test_door_lock_invalid_state_blocked PASSED [ 84%]
+backend/tests/test_policy.py::test_dangerous_operations_strictly_blocked PASSED [ 86%]
+backend/tests/test_policy.py::test_unknown_tool_strictly_blocked PASSED  [ 88%]
+backend/tests/test_undo.py::test_undo_add_grocery PASSED                 [ 91%]
+backend/tests/test_undo.py::test_undo_door_lock_restores_previous_state PASSED [ 93%]
+backend/tests/test_undo.py::test_cannot_undo_twice PASSED                [ 95%]
 backend/tests/test_undo.py::test_cannot_undo_unexecuted_action PASSED    [ 97%]
 backend/tests/test_undo.py::test_cannot_undo_non_reversible_action PASSED [100%]
 
-============================= 39 passed in 1.45s ==============================
+======================== 45 passed, 1 warning in 8.75s ========================
+```
+
+---
+
+## Hackathon Demo & Submission Materials
+
+1. **[Demo Video Script (2-minute)](docs/demo_script.md)**: Narration and on-screen workflow steps covering Allowed Actions, Approval Gating, Security Blocks, and Undo Reversibility.
+2. **[Submission Checklist & Track Guide](docs/submission_checklist.md)**: Deliverables matrix, feedback on AI agent governance, and developer friction log.
+3. **[Architecture Specification](docs/architecture.md)**: Detailed schema and state-machine transitions.
+4. **[Open Source License](LICENSE)**: MIT License.
 ```
 
 ---

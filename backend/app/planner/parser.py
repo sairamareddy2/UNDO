@@ -22,9 +22,13 @@ class ActionIntentParser:
 
         # 1. Attempt Gemini-driven structured parsing if configured
         if gemini_adapter.is_available():
-            proposals = gemini_adapter.generate_action_proposals(text)
-            if proposals:
-                return proposals
+            try:
+                proposals = gemini_adapter.generate_action_proposals(text)
+                if proposals:
+                    return proposals
+            except Exception:
+                # Fail-safe: fallback to deterministic parser on any adapter exception
+                pass
 
         # 2. Deterministic rule-based intent parsing (Fallback & Baseline)
         return cls._parse_deterministic(text)

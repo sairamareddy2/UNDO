@@ -29,7 +29,7 @@ export const Header: React.FC<Props> = ({ health, mcpStatus, onResetState, isRes
                   UNDO
                 </span>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-violet-950 text-violet-300 border border-violet-800/40">
-                  Day 2 · MCP Active
+                  Day 4 · Hackathon Ready
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium">
@@ -66,6 +66,12 @@ export const Header: React.FC<Props> = ({ health, mcpStatus, onResetState, isRes
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy-950 border border-navy-750 font-mono text-slate-300">
             <Database className="w-3.5 h-3.5 text-violet-400" />
             <span>SQLite Active</span>
+          </div>
+
+          {/* AI Planner Badge */}
+          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy-950 border border-navy-750 font-mono text-[11px] text-slate-300">
+            <Sparkles className={`w-3.5 h-3.5 ${health?.gemini_connected ? 'text-blue-400 animate-pulse' : 'text-slate-400'}`} />
+            <span>{health?.gemini_connected ? `${health.gemini_model || 'Gemini Active'}` : 'Offline Fallback'}</span>
           </div>
 
           {/* MCP Server Status Pill */}

@@ -239,8 +239,8 @@ export const ActionCard: React.FC<Props> = ({
           )}
 
           {action.status === 'REVERSED' && (
-            <span className="text-xs text-purple-400 font-mono flex items-center gap-1">
-              <RotateCcw className="w-3.5 h-3.5" /> Reverted
+            <span className="text-xs text-purple-300 font-mono flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-950/60 border border-purple-800/40 shadow-sm">
+              <RotateCcw className="w-3.5 h-3.5 text-purple-300" /> Restored to Prior State
             </span>
           )}
 

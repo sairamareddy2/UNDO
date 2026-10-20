@@ -103,4 +103,6 @@ class HealthCheckResponse(BaseModel):
     app: str
     environment: str
     database_connected: bool
+    gemini_connected: bool = False
+    gemini_model: Optional[str] = None
     timestamp: datetime.datetime

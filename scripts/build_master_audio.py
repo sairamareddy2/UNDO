@@ -19,7 +19,7 @@ def build_master_audio():
     total_duration = timestamps.get("total_duration", 160.0)
     print(f"[AUDIO MASTER] Building master narration synchronized to {total_duration:.2f}s video...")
 
-    scene_keys = ["scene1", "scene2", "scene3", "scene4", "scene5", "scene6", "scene7"]
+    scene_keys = ["scene1", "scene2", "scene3", "scene4", "scene5", "scene6", "scene7", "scene8"]
     filter_inputs = []
     filter_complex = []
 

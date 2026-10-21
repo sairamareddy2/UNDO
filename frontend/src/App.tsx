@@ -42,7 +42,7 @@ export const App: React.FC = () => {
     }, 5000);
   };
 
-  const loadAllData = useCallback(async () => {
+  const loadAllData = useCallback(async (targetPlanId?: string) => {
     try {
       const [h, m, p, a, s, aud] = await Promise.all([
         api.getHealth().catch(() => null),
@@ -60,19 +60,21 @@ export const App: React.FC = () => {
       if (s) setLiveState(s);
       setAuditEvents(aud);
 
-      // Keep active plan in sync
-      if (activePlan) {
-        const refreshedPlan = p.find((item: ActionPlan) => item.id === activePlan.id);
-        if (refreshedPlan) setActivePlan(refreshedPlan);
-      } else if (p.length > 0) {
-        setActivePlan(p[0]);
-      }
+      // Keep active plan in sync safely using functional update
+      setActivePlan((currentActive) => {
+        const idToFind = targetPlanId || (currentActive ? currentActive.id : null);
+        if (idToFind) {
+          const refreshedPlan = p.find((item: ActionPlan) => item.id === idToFind);
+          if (refreshedPlan) return refreshedPlan;
+        }
+        return currentActive || (p.length > 0 ? p[0] : null);
+      });
     } catch (err: any) {
       console.error('Failed to load initial data:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [activePlan]);
+  }, []);
 
   useEffect(() => {
     loadAllData();
@@ -91,10 +93,9 @@ export const App: React.FC = () => {
     try {
       const newPlan = await api.createPlan(prompt);
       setActivePlan(newPlan);
-      setPlans((prev) => [newPlan, ...prev]);
       setCurrentTab('PLANNER');
       showNotification('success', `Generated action plan with ${newPlan.actions.length} step(s).`);
-      await loadAllData();
+      await loadAllData(newPlan.id);
     } catch (err: any) {
       showNotification('error', `Failed to create plan: ${err.message}`);
     } finally {

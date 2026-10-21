@@ -82,7 +82,10 @@ class GeminiAdapter:
         if self._client is None:
             if not self.is_available():
                 raise ValueError("GEMINI_API_KEY is not configured.")
-            self._client = genai.Client(api_key=self._api_key)
+            self._client = genai.Client(
+                api_key=self._api_key,
+                http_options=types.HttpOptions(timeout=7000)
+            )
         return self._client
 
     def generate_action_proposals(self, prompt: str) -> List[Tuple[str, str, Dict[str, Any]]]:
@@ -96,9 +99,8 @@ class GeminiAdapter:
 
         # Candidate models with automatic failover if one hits per-model quota limits
         candidate_models = [self.model]
-        for fallback_m in ["gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-flash-latest"]:
-            if fallback_m not in candidate_models:
-                candidate_models.append(fallback_m)
+        if self.model != "gemini-3.1-flash-lite":
+            candidate_models.append("gemini-3.1-flash-lite")
 
         for model_name in candidate_models:
             try:

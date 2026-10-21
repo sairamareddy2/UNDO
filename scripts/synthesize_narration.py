@@ -7,49 +7,38 @@ AUDIO_DIR = "artifacts/audio"
 
 SCENES = {
     "scene1": (
-        "Meet UNDO, a reversible, risk-aware AI agent built for the Alexa-plus simulated web experience track. "
-        "When autonomous conversational assistants interact with household devices and digital accounts, "
-        "large language models can hallucinate or attempt risky operations. "
-        "UNDO combines AI-powered action planning with deterministic risk evaluation, human approval, "
-        "audit history, and the ability to reverse supported actions."
+        "AI assistants can do more than answer questions. They can also take actions, and those actions can be risky. "
+        "UNDO is a reversible, risk-aware AI agent designed to evaluate actions, enforce safeguards, and help restore supported changes."
     ),
     "scene2": (
-        "UNDO turns natural-language requests into structured actions. "
-        "Here, we submit a request to add two cartons of organic almond milk to our grocery list. "
-        "Powered by Google Gemini, the assistant extracts typed parameters, while a separate "
-        "deterministic policy engine evaluates each proposed action before it can execute."
+        "UNDO accepts natural-language requests and converts them into structured action proposals. "
+        "Gemini assists with planning when available, while a separate deterministic policy engine controls whether the action may proceed."
     ),
     "scene3": (
-        "Low-risk actions can proceed when policy permits them. "
-        "Our policy engine verifies the item and approves it with an ALLOW decision. "
-        "Once executed, the item commits directly to SQLite and updates the live household view. "
-        "UNDO records the relevant state and can restore the previous state for supported operations, "
-        "reverting changes with a single click."
+        "Before execution, UNDO can simulate supported actions in an isolated environment. "
+        "The safety report shows projected changes, validation results, possible failure scenarios, and whether rollback was verified. "
+        "This gives the user evidence about the operation before the real application state changes."
     ),
     "scene4": (
-        "Sensitive actions require explicit human approval. "
-        "When asking to unlock the front door, the policy engine marks the request as REQUIRE APPROVAL. "
-        "The AI cannot grant itself permission, and execution is strictly gated. "
-        "Once approved on the dashboard and executed, the simulated door lock state transitions to unlocked. "
-        "Door operations in this demonstration are simulated in software, not connected to physical hardware."
+        "After reviewing the simulation, the user can continue through the normal execution flow. "
+        "UNDO applies its policy checks, records the operation, and supports reversing this grocery change. "
+        "Simulation and execution are separate steps."
     ),
     "scene5": (
-        "Dangerous actions are blocked before execution. "
-        "When a prompt requests to wipe the database and delete all application records, "
-        "our security rules trigger an immediate BLOCK. Zero execution controls exist, no database queries are run, "
-        "and the incident is recorded to the audit log. "
-        "This demonstrates the distinction between an AI proposing an action and the policy engine authorizing it."
+        "Sensitive actions require explicit approval. Even if the simulation completes successfully, it cannot bypass the policy engine. "
+        "Here, the simulated door unlock requires human approval before the application executes the change."
     ),
     "scene6": (
-        "UNDO also exposes seven tools through an official Python MCP server using Streamable HTTP on port 8001, "
-        "enabling compatible clients to interact with its capabilities while retaining the application's policy controls. "
-        "External agents discover tools for groceries, reminders, and door locks, and cannot bypass human approval."
+        "UNDO also blocks prohibited operations. This destructive request remains blocked rather than executing. "
+        "A simulation result can never override a blocked policy decision."
     ),
     "scene7": (
-        "In summary, UNDO combines AI planning, deterministic risk controls, human approval, "
-        "audit history, and reversible execution with 45 passing automated tests. "
-        "It demonstrates how AI agents can be designed to act with greater accountability. "
-        "Thank you for watching."
+        "UNDO also exposes seven tools through an MCP server using Streamable HTTP. "
+        "Compatible clients can inspect state and invoke supported operations while the application retains its policy controls."
+    ),
+    "scene8": (
+        "UNDO combines AI planning, test-before-execute simulation, human approval, policy enforcement, and reversible actions. "
+        "It is designed to make AI agent actions more transparent, controlled, and recoverable."
     ),
 }
 

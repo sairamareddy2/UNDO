@@ -375,12 +375,27 @@ backend/tests/test_undo.py::test_cannot_undo_non_reversible_action PASSED [100%]
 
 ---
 
+## Cloud Deployment (Render & Railway)
+
+UNDO is pre-configured for automated 1-click cloud deployment via **Render Blueprint** ([`render.yaml`](render.yaml)) and **Railway** ([`railway.json`](railway.json)) using a multi-stage Docker build:
+
+- **Full Deployment Guide**: [docs/deployment.md](docs/deployment.md)
+- **Deploy to Render**: Connect `sairamareddy2/UNDO` via Render Blueprint; it automatically builds the React 19 frontend and runs FastAPI + MCP with free HTTPS.
+- **Deploy to Railway**: Connect repository via Railway New Project &rarr; deploy instantly with automatic domain generation.
+- **Run with Docker**:
+  ```bash
+  docker compose up --build
+  ```
+
+---
+
 ## Hackathon Demo & Submission Materials
 
 1. **[Demo Video Script (~2:30)](docs/demo_script.md)**: Narration and on-screen workflow steps covering Allowed Actions, Approval Gating, Security Blocks, and Undo Reversibility.
-2. **[Submission Checklist & Track Guide](docs/submission_checklist.md)**: Deliverables matrix, feedback on AI agent governance, and developer friction log.
-3. **[Architecture Specification](docs/architecture.md)**: Detailed schema and state-machine transitions.
-4. **[Open Source License](LICENSE)**: MIT License.
+2. **[Cloud Deployment Guide](docs/deployment.md)**: Instructions for Render, Railway, and Docker container deployments.
+3. **[Submission Checklist & Track Guide](docs/submission_checklist.md)**: Deliverables matrix, feedback on AI agent governance, and developer friction log.
+4. **[Architecture Specification](docs/architecture.md)**: Detailed schema and state-machine transitions.
+5. **[Open Source License](LICENSE)**: MIT License.
 
 ---
 

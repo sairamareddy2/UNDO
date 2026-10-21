@@ -1,0 +1,15 @@
+services:
+  undo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: undo-governance-engine
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - APP_ENV=production
+      - DEBUG=false
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.1-flash-lite}
+    restart: unless-stopped

@@ -29,6 +29,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
 # Mount API routers
 app.include_router(health.router, prefix="/api", tags=["System"])
 app.include_router(plans.router, prefix="/api", tags=["Action Plans"])
@@ -37,15 +41,23 @@ app.include_router(safety.router, prefix="/api", tags=["Safety Simulator"])
 app.include_router(state.router, prefix="/api", tags=["Application State"])
 app.include_router(mcp.router, prefix="/api", tags=["MCP"])
 
+# Mount MCP Streamable HTTP ASGI application for unified single-port deployments
+from app.mcp_server import mcp_app
+app.mount("/mcp", mcp_app)
 
-@app.get("/")
-def root():
-    return {
-        "service": settings.APP_NAME,
-        "version": "1.0.0",
-        "status": "operational",
-        "docs_url": "/docs",
-    }
+# Mount frontend static distribution if built, fallback to JSON status
+frontend_dist = Path(os.environ.get("FRONTEND_DIST", Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"))
+if frontend_dist.exists() and (frontend_dist / "index.html").exists():
+    app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
+else:
+    @app.get("/")
+    def root():
+        return {
+            "service": settings.APP_NAME,
+            "version": "1.0.0",
+            "status": "operational",
+            "docs_url": "/docs",
+        }
 
 
 if __name__ == "__main__":

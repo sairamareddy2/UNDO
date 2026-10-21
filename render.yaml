@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: undo-governance-engine
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: APP_NAME
+        value: "UNDO Action Governance Engine"
+      - key: DATABASE_URL
+        value: sqlite:///./undo.db
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+      - key: GEMINI_API_KEY
+        sync: false

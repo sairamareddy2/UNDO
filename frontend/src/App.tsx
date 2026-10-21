@@ -78,11 +78,20 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     loadAllData();
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       // Background poll health, MCP status & live state
-      api.getHealth().then(setHealth).catch(() => {});
-      api.getMcpStatus().then(setMcpStatus).catch(() => {});
-      api.getLiveState().then(setLiveState).catch(() => {});
+      try {
+        const h = await api.getHealth();
+        setHealth(h);
+      } catch (_) {}
+      try {
+        const m = await api.getMcpStatus();
+        setMcpStatus(m);
+      } catch (_) {}
+      try {
+        const s = await api.getLiveState();
+        if (s) setLiveState(s);
+      } catch (_) {}
     }, 8000);
     return () => clearInterval(interval);
   }, [loadAllData]);

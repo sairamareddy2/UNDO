@@ -8,11 +8,47 @@ import type {
   SafetyReport,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+// Default to the confirmed live Render production backend in production builds
+const DEFAULT_PROD_BACKEND = 'https://undo-governance-engine.onrender.com';
+
+const RAW_API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? DEFAULT_PROD_BACKEND : '/api');
+
+/**
+ * Normalizes base URL and endpoint to guarantee valid, single '/api' prefix paths.
+ * Examples:
+ *   buildApiUrl('/health')
+ *     -> 'https://undo-governance-engine.onrender.com/api/health'
+ *   buildApiUrl('mcp/status')
+ *     -> 'https://undo-governance-engine.onrender.com/api/mcp/status'
+ */
+export function buildApiUrl(endpoint: string): string {
+  const base = (RAW_API_URL || '').trim().replace(/\/+$/, '');
+  let cleanEndpoint = (endpoint || '').trim().replace(/^\/+/, '');
+
+  // Strip leading 'api/' if caller redundantly included it
+  if (cleanEndpoint.startsWith('api/')) {
+    cleanEndpoint = cleanEndpoint.substring(4).replace(/^\/+/, '');
+  }
+
+  // If running relative in dev proxy mode
+  if (!base || base === '/api') {
+    return `/api/${cleanEndpoint}`;
+  }
+
+  // If base already contains '/api' at the end
+  if (base.endsWith('/api')) {
+    return `${base}/${cleanEndpoint}`;
+  }
+
+  // Otherwise append '/api' to base
+  return `${base}/api/${cleanEndpoint}`;
+}
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE}${endpoint}`;
+    const url = buildApiUrl(endpoint);
     const headers = {
       'Content-Type': 'application/json',
       ...(options.headers || {}),

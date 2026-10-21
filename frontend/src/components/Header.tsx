@@ -11,8 +11,13 @@ interface Props {
 
 export const Header: React.FC<Props> = ({ health, mcpStatus, onResetState, isResetting = false }) => {
   const [showMcpDetails, setShowMcpDetails] = useState(false);
-  const isHealthy = health?.status === 'healthy';
-  const isMcpOnline = mcpStatus?.reachable === true;
+  const isHealthy = Boolean(
+    health &&
+    (health.status?.toLowerCase() === 'healthy' ||
+     health.status?.toLowerCase() === 'ok' ||
+     health.database_connected === true)
+  );
+  const isMcpOnline = Boolean(mcpStatus?.reachable === true || mcpStatus?.status === 'online');
 
   return (
     <header className="bg-navy-900/90 border-b border-navy-750/70 sticky top-0 z-30 backdrop-blur-md px-6 py-3.5">

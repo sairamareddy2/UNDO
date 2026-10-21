@@ -17,5 +17,7 @@ services:
         value: sqlite:///./undo.db
       - key: GEMINI_MODEL
         value: gemini-3.1-flash-lite
+      - key: CORS_ORIGINS
+        value: "https://undo-gi2b.vercel.app,https://undo-zeta-virid.vercel.app,http://localhost:5173"
       - key: GEMINI_API_KEY
         sync: false

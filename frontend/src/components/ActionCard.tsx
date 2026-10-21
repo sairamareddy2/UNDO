@@ -10,10 +10,13 @@ import {
   Info,
   Clock,
   Loader2,
+  ShieldCheck,
 } from 'lucide-react';
-import type { Action } from '../types';
+import type { Action, SafetyReport } from '../types';
+import { api } from '../services/api';
 import { PolicyBadge } from './PolicyBadge';
 import { StatusBadge } from './StatusBadge';
+import { SafetyReportView } from './SafetyReportView';
 
 interface Props {
   action: Action;
@@ -51,6 +54,23 @@ export const ActionCard: React.FC<Props> = ({
 
   const busy = isProcessing || localLoading;
 
+  const [safetyReport, setSafetyReport] = useState<SafetyReport | null>(null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simError, setSimError] = useState<string | null>(null);
+
+  const handleSimulateSafety = async () => {
+    setSimError(null);
+    setIsSimulating(true);
+    try {
+      const report = await api.simulateSafety({ actionId: action.id });
+      setSafetyReport(report);
+    } catch (err: any) {
+      setSimError(err.message || 'Safety simulation failed');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
   // Determine eligible actions
   const needsApproval =
     action.policy_decision === 'REQUIRE_APPROVAL' &&
@@ -62,6 +82,7 @@ export const ActionCard: React.FC<Props> = ({
     (action.status === 'PENDING' && action.policy_decision === 'ALLOW');
 
   const canUndo = action.status === 'EXECUTED' && action.is_reversible;
+  const canSimulate = action.status === 'PENDING' || action.status === 'APPROVED' || action.status === 'BLOCKED';
 
   return (
     <div className="bg-navy-900 border border-navy-750/70 hover:border-navy-600/70 rounded-xl p-5 shadow-lg transition-all duration-200">
@@ -173,6 +194,24 @@ export const ActionCard: React.FC<Props> = ({
         </div>
       )}
 
+      {/* Simulation Error Alert */}
+      {simError && (
+        <div className="bg-rose-950/40 border border-rose-500/30 rounded-lg p-3 text-xs text-rose-300 mt-3">
+          Safety simulation error: {simError}
+        </div>
+      )}
+
+      {/* Safety Simulator Report View */}
+      {safetyReport && (
+        <SafetyReportView
+          report={safetyReport}
+          onClose={() => setSafetyReport(null)}
+          onExecute={canExecute ? () => handleAction(onExecute) : undefined}
+          onApprove={needsApproval ? () => handleAction(onApprove) : undefined}
+          isProcessing={busy}
+        />
+      )}
+
       {/* Action Controls Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-navy-800/80 mt-2">
         <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
@@ -186,7 +225,25 @@ export const ActionCard: React.FC<Props> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Test Before Execute Button */}
+          {canSimulate && (
+            <button
+              type="button"
+              disabled={busy || isSimulating}
+              onClick={handleSimulateSafety}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-navy-800 hover:bg-navy-750 text-violet-300 border border-violet-800/50 hover:border-violet-600/70 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              title="Run isolated sandbox simulation before executing"
+            >
+              {isSimulating ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+              ) : (
+                <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
+              )}
+              Test Before Execute
+            </button>
+          )}
+
           {/* Approval Controls */}
           {needsApproval && (
             <>

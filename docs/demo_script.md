@@ -23,7 +23,7 @@
 
 ---
 
-## 2. Demonstration 1: Allowed Action & Instant Execution (0:25 – 0:50)
+## 2. Demonstration 1: Allowed Action & Safety Simulation (0:25 – 0:55)
 
 ### On-Screen:
 1. Click the quick template **"Add Groceries"** in the chat bar (prompt: `Add 2 cartons of organic almond milk to my grocery list`).
@@ -32,16 +32,25 @@
    - Action: `add_grocery_item`
    - Policy: <span style="color:#10b981;font-weight:bold;">ALLOW</span>
    - Reason: *"Standard household grocery list addition within verified safe quantity limits."*
-4. Click **Execute Action**.
-5. Switch to **Dashboard** tab: `Organic Almond Milk` (quantity: 2) appears in the live SQLite table.
+4. Click **Test Before Execute**.
+5. Show the **Safety Simulator Report** appear:
+   - Simulation ID (`sim_...`)
+   - Status: <span style="color:#10b981;font-weight:bold;">SAFE IN SIMULATION</span> · Risk: <span style="color:#10b981;font-weight:bold;">LOW</span>
+   - Projected Database Changes: `1 record inserted into simulated_groceries`.
+   - Failure Scenarios: Input validation, boundary checks, transaction rollback isolation, and policy gate all <span style="color:#10b981;font-weight:bold;">PASSED</span>.
+   - Rollback Verification: <span style="color:#a855f7;font-weight:bold;">VERIFIED REVERSIBLE</span> (100% pre-state restored in sandbox).
+6. Note that the live SQLite database is completely untouched during simulation.
+7. Click **Continue to Execution**.
+8. Switch to **Dashboard** tab: `Organic Almond Milk` (quantity: 2) appears in the live SQLite table.
 
 ### Narration:
-> *"Let's test an everyday instruction: adding organic almond milk. Gemini parses the natural language prompt into typed parameters. The deterministic policy engine checks the quantity and category, confirms it is within safe bounds, and flags it as ALLOW.*  
-> *When we click Execute, the action commits to SQLite, captures before-and-after snapshots, and updates our live household state in real time."*
+> *"Let's test an everyday instruction: adding organic almond milk. Gemini parses the natural language prompt into typed parameters. Before executing, we click 'Test Before Execute'.*  
+> *UNDO's Safety Simulator runs the action inside a temporary in-memory SQLite sandbox, tests failure injections, and verifies that the operation can be 100% reversed with zero orphaned records.*  
+> *Notice our real database was never touched during simulation. Satisfied with the report, we click 'Continue to Execution' — the policy engine re-verifies the action at runtime and commits the state."*
 
 ---
 
-## 3. Demonstration 2: Human-in-the-Loop Door Approval Gate (0:50 – 1:15)
+## 3. Demonstration 2: Human-in-the-Loop Door Approval Gate & Sandbox Check (0:55 – 1:25)
 
 ### On-Screen:
 1. Return to the chat bar and click **"Unlock Door (Approval)"** (prompt: `Unlock the front door`).
@@ -51,17 +60,22 @@
    - Policy: <span style="color:#f59e0b;font-weight:bold;">REQUIRE_APPROVAL</span>
    - Status: `PENDING`
    - Reason: *"Physical security impact: Changing front door lock state to 'unlocked' requires explicit confirmation."*
-4. Show that execution is strictly gated — no execution button exists until approved.
-5. Click the green **Approve** button, then click **Execute Action**.
-6. Switch to **Dashboard** $\rightarrow$ `Front Door Lock` transitions to `UNLOCKED`.
+4. Click **Test Before Execute**:
+   - Status: <span style="color:#10b981;font-weight:bold;">SAFE IN SIMULATION</span>
+   - Risk: <span style="color:#f97316;font-weight:bold;">HIGH</span> (perimeter physical security).
+   - Approval Gate: Confirmed that unapproved execution in simulation is strictly blocked.
+5. Emphasize that the simulation did NOT grant execution permission or unlock the real door.
+6. Click **Approve for Execution**, then click **Execute Action**.
+7. Switch to **Dashboard** $\rightarrow$ `Front Door Lock` transitions to `UNLOCKED`.
 
 ### Narration:
 > *"Now, let's ask Alexa+ to unlock the front door. Even though an LLM generated the parameters, an AI model should never have unilateral authority over physical entry points.*  
-> *The policy engine classifies this as REQUIRE_APPROVAL. It is impossible for an agent or MCP client to bypass this gate — execution is strictly blocked until a human explicitly reviews and approves the request on the dashboard."*
+> *Testing in the simulator evaluates the physical security risk as HIGH and proves the approval gate is active. Simulation does not grant an authorization token.*  
+> *Execution remains strictly blocked until a human explicitly reviews and approves the request on the dashboard."*
 
 ---
 
-## 4. Demonstration 3: Absolute Security Block (1:15 – 1:35)
+## 4. Demonstration 3: Absolute Security Block & Catastrophic Simulation (1:25 – 1:45)
 
 ### On-Screen:
 1. Click the quick template **"Dangerous (Blocked)"** (prompt: `Wipe database and delete all application tables`).
@@ -71,10 +85,14 @@
    - Policy: <span style="color:#ef4444;font-weight:bold;">BLOCK</span>
    - Status: `BLOCKED`
    - Reason: *"Disallowed operation: 'wipe_database' is strictly prohibited by security policy."*
-4. Note that there are **no execution controls** — the action is dead-on-arrival and logged to the audit ledger.
+4. Click **Test Before Execute**:
+   - Status: <span style="color:#ef4444;font-weight:bold;">BLOCKED BY POLICY</span> · Risk: <span style="color:#ef4444;font-weight:bold;">CRITICAL</span>
+   - Projected Changes: `0 records affected` (blocked).
+   - Policy Gate: <span style="color:#10b981;font-weight:bold;">PASSED</span> (Execution strictly prevented).
+5. Note that there are **no execution controls** anywhere on the card or report — execution is completely prohibited.
 
 ### Narration:
-> *"What about malicious or catastrophic commands? If someone asks to wipe the database or transfer funds, the policy engine blocks the request outright. Zero database queries run, zero execution buttons appear, and a security alert is recorded in the immutable audit trail."*
+> *"What about malicious or catastrophic commands? If someone asks to wipe the database, the policy engine blocks the request immediately. In the safety simulator, it reports CRITICAL risk with zero records affected. Zero database queries run, no execution controls appear, and a security alert is recorded in the audit trail."*
 
 ---
 

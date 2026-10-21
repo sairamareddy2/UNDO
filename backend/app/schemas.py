@@ -106,3 +106,60 @@ class HealthCheckResponse(BaseModel):
     gemini_connected: bool = False
     gemini_model: Optional[str] = None
     timestamp: datetime.datetime
+
+
+# --- Safety Simulator Schemas ---
+
+class SafetySimulationRequest(BaseModel):
+    action_id: Optional[str] = Field(None, description="ID of an existing planned action to simulate")
+    action_type: Optional[str] = Field(None, description="Action type if simulating an ad-hoc action")
+    parameters: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Parameters for the action")
+    title: Optional[str] = Field(None, description="Optional title or display name for the action")
+
+
+class FailureScenarioResult(BaseModel):
+    name: str
+    category: str
+    status: str  # "PASSED", "FAILED", "WARNING", "UNSUPPORTED"
+    expected: str
+    observed: str
+
+
+class ProposedChange(BaseModel):
+    target: str
+    change_type: str  # "INSERT", "UPDATE", "DELETE", "BLOCKED", "NONE"
+    description: str
+    affected_records: int
+    details: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ReversibilityReport(BaseModel):
+    result: str  # "VERIFIED_REVERSIBLE", "NOT_REVERSIBLE", "ROLLBACK_FAILED", "NOT_TESTED"
+    rollback_tested: bool
+    state_restored: bool
+    recovery_method: str
+    unverified_fields: List[str] = Field(default_factory=list)
+
+
+class SafetyReportResponse(BaseModel):
+    simulation_id: str
+    action_id: Optional[str] = None
+    action_type: str
+    title: str
+    parameters: Dict[str, Any]
+    overall_status: str  # "SAFE IN SIMULATION", "WARNINGS FOUND", "BLOCKED BY POLICY", "SIMULATION FAILED", "ROLLBACK UNVERIFIED"
+    risk_level: str      # "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    risk_rationale: str
+    policy_decision: str # "ALLOW", "REQUIRE_APPROVAL", "BLOCK"
+    policy_reason: str
+    requires_approval: bool
+    initial_state_summary: Dict[str, Any]
+    proposed_changes: List[ProposedChange]
+    validation_results: Dict[str, Any]
+    failure_scenarios: List[FailureScenarioResult]
+    reversibility: ReversibilityReport
+    warnings: List[str] = Field(default_factory=list)
+    limitations: List[str] = Field(default_factory=list)
+    timestamp: datetime.datetime
+
+    model_config = ConfigDict(from_attributes=True)

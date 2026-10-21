@@ -7,9 +7,15 @@
 [![Google GenAI](https://img.shields.io/badge/AI_Planner-Google_GenAI_(SDK_v2.31)-4285F4.svg?style=flat&logo=google)](https://ai.google.dev)
 [![MCP](https://img.shields.io/badge/Protocol-Official_Python_MCP_SDK_(Streamable_HTTP)-8B5CF6.svg?style=flat)](https://modelcontextprotocol.io)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg?style=flat&logo=sqlite)](https://sqlite.org)
-[![Pytest](https://img.shields.io/badge/Testing-Pytest_(45/45_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
+[![Pytest](https://img.shields.io/badge/Testing-Pytest_(59/59_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
 
-**UNDO** is a reliable action-governance and state-reversibility layer for the **Alexa+ simulated web experience track**, featuring natural language action planning via **Google Gemini** (`google-genai`), a live **Model Context Protocol (MCP)** server with **Streamable HTTP transport**, and planned **AWS Builder integration** (Amazon Bedrock with Boto3).
+**UNDO** is a reliable action-governance, risk-simulation, and state-reversibility layer for the **Alexa+ simulated web experience track**, featuring:
+- **UNDO Safety Simulator (Test Before Execute)**: An isolated sandbox engine that simulates actions, tests realistic failure injections, verifies 100% rollback recovery, and derives deterministic risk profiles before touching real data.
+- **Natural Language Action Planning**: Built with the official **Google Gen AI Python SDK** (`google-genai`).
+- **Live Model Context Protocol (MCP) Server**: Using the official **Python MCP SDK over Streamable HTTP** with 7 tools.
+- **Deterministic Policy Engine**: Enforcing `ALLOW`, `REQUIRE_APPROVAL`, and `BLOCK` safety invariants.
+- **State Snapshots & Undo Support**: Atomic state restoration with idempotent transaction guards.
+- **Planned Cloud Integration**: Scaffolded AWS Builder integration (Amazon Bedrock with Boto3).
 
 It guarantees that agentic operations (modifying household grocery lists, scheduling notifications, and actuating smart home doors) undergo **deterministic policy evaluation** prior to execution, and maintains **before-and-after state snapshots** for atomic, verified rollback.
 
@@ -42,7 +48,14 @@ It guarantees that agentic operations (modifying household grocery lists, schedu
    - Enforces strict undo invariants: only executed, reversible actions can be undone; repeated undos are rejected.
    - Every execution and undo produces an immutable event in the audit trail.
 
-5. **Polished Alexa+ Web Dashboard**:
+5. **UNDO Safety Simulator (Test Before Execute)**:
+   - Dedicated sandbox engine (`backend/app/services/safety_simulator.py`) operating on isolated temporary in-memory SQLite clones.
+   - Evaluates actions against deterministic failure injections, constraint checks, and state conflict detections before touching real data.
+   - Rigorously tests rollback recovery by applying the action, reversing it with `UndoManager`, and comparing pre- and post-rollback states for a 100% verified match.
+   - Returns structured safety reports with clear status badges (`SAFE IN SIMULATION`, `WARNINGS FOUND`, `BLOCKED BY POLICY`, `SIMULATION FAILED`, `ROLLBACK UNVERIFIED`), risk levels (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`), projected database changes, and limitations.
+   - Never bypasses the deterministic policy engine or approval requirements.
+
+6. **Polished Alexa+ Web Dashboard**:
    - Dark navy interface (`#080C16`) with restrained violet accents.
    - Live MCP server status indicator showing connection state, transport, and exposed tool count.
    - Chat-style input with one-click simulation templates.
@@ -92,6 +105,61 @@ It guarantees that agentic operations (modifying household grocery lists, schedu
 - **Untrusted Proposals**: The AI model is strictly a semantic planner; it has zero authority to execute actions or bypass policy rules.
 - **Credential Hygiene**: `GEMINI_API_KEY` is loaded through Pydantic BaseSettings from `.env`. The key is never logged, printed, returned in API responses, or committed to git.
 - **Fail-Safe Fallback**: If Gemini encounters a network error, rate limit, or outputs invalid JSON, UNDO logs a sanitized warning and seamlessly falls back to the deterministic parser without failing the user's request.
+
+---
+
+## UNDO Safety Simulator (Test Before Execute)
+
+The **Safety Simulator** allows users, reviewers, and operators to evaluate any proposed action in an isolated sandbox before committing state changes to the live SQLite database.
+
+```
+       [Proposed Action]
+               │
+               ▼
+   [Test Before Execute Button]
+               │
+               ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Safety Simulator (Sandbox Engine)              │
+│                                                             │
+│ 1. Clone live state into isolated in-memory SQLite sandbox  │
+│ 2. Evaluate against Deterministic Policy Engine             │
+│ 3. Project database changes and affected record counts      │
+│ 4. Run deterministic failure scenario injections:           │
+│    - Input validation & schema boundaries                   │
+│    - State conflicts & redundancy checks (e.g. door locked) │
+│    - Transaction rollback & persistence isolation           │
+│    - Policy & approval gate enforcement                     │
+│    - Approval expiration (reported honestly as unsupported) │
+│ 5. Execute action against in-memory sandbox                 │
+│ 6. Rollback using UndoManager & compare pre/post states     │
+│ 7. Synthesize Safety Report (Status, Risk, Warnings, Diff)  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+                    [Safety Report Displayed]
+                               │
+               ┌───────────────┴───────────────┐
+               ▼                               ▼
+       [ALLOW / APPROVED]                   [BLOCK]
+   "Continue to Execution"         "Action Blocked by Policy"
+               │                               │
+               ▼                               ▼
+   Re-evaluated by Policy            No execution allowed
+   Committed to live SQLite          Zero queries executed
+```
+
+### Safety Report Structure
+- **Simulation Summary**: Unique ID (`sim_...`), timestamp, overall status badge, risk level, policy decision, approval requirement.
+- **Projected Changes**: Exact database tables affected, mutation type (`INSERT`, `UPDATE`, `DELETE`, `BLOCKED`), and affected record counts.
+- **Failure Injections**: Deterministic scenarios tested with observed vs expected outcomes and clear status pills (`PASSED`, `WARNING`, `UNSUPPORTED`, `FAILED`).
+- **Recovery & Reversibility**: Empirical rollback verification confirming whether pre-execution state was 100% restored.
+- **Disclaimers & Limitations**: Explicit disclosures that sandbox simulation does not guarantee real-world safety or control physical hardware.
+
+### Simulation API Endpoint
+- **Method & Route**: `POST /api/safety/simulate`
+- **Request**: `{ "action_id": "<uuid>" }` or `{ "action_type": "...", "parameters": { ... } }`
+- **Response**: Typed `SafetyReportResponse` schema with complete simulation telemetry.
 
 ---
 

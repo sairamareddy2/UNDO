@@ -11,7 +11,8 @@ This document details all deliverables, verification checks, feedback, and frict
 | Requirement | Implementation in UNDO | Verification Status |
 | :--- | :--- | :--- |
 | **Simulated Web Experience** | Responsive React 19 + Tailwind CSS dashboard with dark navy aesthetic, real-time SQLite entity viewer, interactive action planner, and audit ledger. | ✅ Verified (Port 5173) |
-| **Deterministic Policy Engine** | Authoritative rule-based engine returning `ALLOW`, `REQUIRE_APPROVAL`, and `BLOCK`. Zero reliance on unverified LLM risk scores for security decisions. | ✅ Verified (45/45 tests pass) |
+| **Safety Simulator (Test Before Execute)** | Isolated in-memory sandbox engine evaluating actions before execution, testing failure scenarios, deriving deterministic risk, and verifying 100% rollback recovery. | ✅ Verified (14 new safety tests, 59/59 total) |
+| **Deterministic Policy Engine** | Authoritative rule-based engine returning `ALLOW`, `REQUIRE_APPROVAL`, and `BLOCK`. Zero reliance on unverified LLM risk scores for security decisions. | ✅ Verified (59/59 tests pass) |
 | **State Reversibility (Undo)** | Exact before-and-after SQLite state snapshots with inverse operations. Rollback restores previous state; repeat reversals are strictly prevented. | ✅ Verified in SQLite & MCP |
 | **Official MCP Server** | Real Model Context Protocol server built with official Python MCP SDK (`mcp>=2.3.0`) over Streamable HTTP on port 8001 (`/mcp`). | ✅ Verified (`mcp_client_demo.py`) |
 | **Natural Language Planning** | Google Gemini API integration using official `google-genai` SDK (`gemini-3-flash-preview`) with structured Pydantic schema and instant offline fallback. | ✅ Verified (`verify_gemini_live.py`) |
@@ -27,7 +28,7 @@ This document details all deliverables, verification checks, feedback, and frict
 - [x] **Open Source License**: `LICENSE` file present (MIT License).
 - [x] **Configuration Template**: `.env.example` in root and `backend/.env.example` containing clean placeholders.
 - [x] **Root README.md**: Complete project documentation with architecture diagrams, quickstart guides, test results, and tool tables.
-- [x] **Automated Test Suite**: 45 unit, integration, MCP, and end-to-end workflow tests passing in Pytest.
+- [x] **Automated Test Suite**: 59 unit, integration, MCP, safety simulation, and end-to-end workflow tests passing in Pytest.
 - [x] **Frontend Production Build**: Zero compilation or linting errors via `tsc -b && vite build`.
 - [x] **Demo Materials**:
   - `docs/demo_script.md`: 2-minute demonstration script with exact on-screen actions and narration.

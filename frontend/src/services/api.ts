@@ -5,6 +5,7 @@ import type {
   AuditEvent,
   HealthStatus,
   McpStatus,
+  SafetyReport,
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
@@ -103,6 +104,24 @@ class ApiService {
   async undoAction(actionId: string): Promise<Action> {
     return this.request<Action>(`/actions/${actionId}/undo`, {
       method: 'POST',
+    });
+  }
+
+  // Safety Simulator
+  async simulateSafety(params: {
+    actionId?: string;
+    actionType?: string;
+    parameters?: Record<string, any>;
+    title?: string;
+  }): Promise<SafetyReport> {
+    return this.request<SafetyReport>('/safety/simulate', {
+      method: 'POST',
+      body: JSON.stringify({
+        action_id: params.actionId,
+        action_type: params.actionType,
+        parameters: params.parameters,
+        title: params.title,
+      }),
     });
   }
 

@@ -101,3 +101,60 @@ export interface McpStatus {
   tools_count: number;
   tools: string[];
 }
+
+// --- Safety Simulator Types ---
+
+export type SimulationOverallStatus =
+  | 'SAFE IN SIMULATION'
+  | 'WARNINGS FOUND'
+  | 'BLOCKED BY POLICY'
+  | 'SIMULATION FAILED'
+  | 'ROLLBACK UNVERIFIED';
+
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface FailureScenario {
+  name: string;
+  category: string;
+  status: 'PASSED' | 'FAILED' | 'WARNING' | 'UNSUPPORTED';
+  expected: string;
+  observed: string;
+}
+
+export interface ProposedChange {
+  target: string;
+  change_type: string;
+  description: string;
+  affected_records: number;
+  details: Record<string, any>;
+}
+
+export interface ReversibilityReport {
+  result: 'VERIFIED_REVERSIBLE' | 'NOT_REVERSIBLE' | 'ROLLBACK_FAILED' | 'NOT_TESTED';
+  rollback_tested: boolean;
+  state_restored: boolean;
+  recovery_method: string;
+  unverified_fields: string[];
+}
+
+export interface SafetyReport {
+  simulation_id: string;
+  action_id?: string | null;
+  action_type: string;
+  title: string;
+  parameters: Record<string, any>;
+  overall_status: SimulationOverallStatus;
+  risk_level: RiskLevel;
+  risk_rationale: string;
+  policy_decision: PolicyDecision;
+  policy_reason: string;
+  requires_approval: boolean;
+  initial_state_summary: Record<string, any>;
+  proposed_changes: ProposedChange[];
+  validation_results: Record<string, any>;
+  failure_scenarios: FailureScenario[];
+  reversibility: ReversibilityReport;
+  warnings: string[];
+  limitations: string[];
+  timestamp: string;
+}

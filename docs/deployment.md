@@ -1,6 +1,15 @@
 # UNDO Cloud Deployment Guide
 
-This guide details how to deploy **UNDO** to cloud hosting platforms (**Render** or **Railway**) directly from your GitHub repository, or run it via **Docker**.
+This guide details how to deploy **UNDO** to cloud hosting platforms (**Vercel**, **Render**, or **Railway**) directly from your GitHub repository, or run it via **Docker**.
+
+---
+
+## Live Deployments
+
+- **Production Frontend (Vercel)**: [https://undo-q4bgl83d3-ramakrishna2.vercel.app/](https://undo-q4bgl83d3-ramakrishna2.vercel.app/)
+- **Production Backend (Render)**: [https://undo-governance-engine.onrender.com](https://undo-governance-engine.onrender.com)
+- **API Swagger Documentation**: [https://undo-governance-engine.onrender.com/docs](https://undo-governance-engine.onrender.com/docs)
+- **Health Check Endpoint**: [https://undo-governance-engine.onrender.com/api/health](https://undo-governance-engine.onrender.com/api/health)
 
 ---
 

@@ -1,5 +1,7 @@
 # UNDO — Alexa+ Action Governance & Reversibility Layer
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-black.svg?style=flat&logo=vercel)](https://undo-q4bgl83d3-ramakrishna2.vercel.app/)
+[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7.svg?style=flat&logo=render)](https://undo-governance-engine.onrender.com)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/Frontend-React_19_+_Vite-61DAFB.svg?style=flat&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
@@ -7,7 +9,13 @@
 [![Google GenAI](https://img.shields.io/badge/AI_Planner-Google_GenAI_(SDK_v2.31)-4285F4.svg?style=flat&logo=google)](https://ai.google.dev)
 [![MCP](https://img.shields.io/badge/Protocol-Official_Python_MCP_SDK_(Streamable_HTTP)-8B5CF6.svg?style=flat)](https://modelcontextprotocol.io)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg?style=flat&logo=sqlite)](https://sqlite.org)
-[![Pytest](https://img.shields.io/badge/Testing-Pytest_(59/59_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
+[![Pytest](https://img.shields.io/badge/Testing-Pytest_(60/60_Passed)-0A9EDC.svg?style=flat&logo=pytest)](https://pytest.org)
+
+> **Live Deployment URLs:**
+> - **Web Dashboard (Vercel)**: [https://undo-q4bgl83d3-ramakrishna2.vercel.app/](https://undo-q4bgl83d3-ramakrishna2.vercel.app/)
+> - **API & MCP Backend (Render)**: [https://undo-governance-engine.onrender.com](https://undo-governance-engine.onrender.com)
+> - **API Interactive Documentation**: [https://undo-governance-engine.onrender.com/docs](https://undo-governance-engine.onrender.com/docs)
+> - **Backend Health Check**: [https://undo-governance-engine.onrender.com/api/health](https://undo-governance-engine.onrender.com/api/health)
 
 **UNDO** is a reliable action-governance, risk-simulation, and state-reversibility layer for the **Alexa+ simulated web experience track**, featuring:
 - **UNDO Safety Simulator (Test Before Execute)**: An isolated sandbox engine that simulates actions, tests realistic failure injections, verifies 100% rollback recovery, and derives deterministic risk profiles before touching real data.
@@ -308,81 +316,85 @@ $env:PYTHONPATH="backend"
 python -m pytest backend/tests -v
 ```
 
-### Test Results (59 Passed)
+### Test Results (60 Passed)
 ```text
 backend/tests/test_api.py::test_health_endpoint PASSED                   [  1%]
 backend/tests/test_api.py::test_create_plan_with_allowed_and_approval_actions PASSED [  3%]
 backend/tests/test_api.py::test_approval_and_execution_lifecycle PASSED  [  5%]
 backend/tests/test_api.py::test_reject_action_lifecycle PASSED           [  6%]
 backend/tests/test_api.py::test_blocked_intent_creation PASSED           [  8%]
-backend/tests/test_e2e_workflows.py::test_e2e_grocery_workflow_allow_execute_undo_invariants PASSED [ 10%]
-backend/tests/test_e2e_workflows.py::test_e2e_door_unlock_require_approval_gate PASSED [ 11%]
-backend/tests/test_e2e_workflows.py::test_e2e_dangerous_request_blocked PASSED [ 13%]
-backend/tests/test_e2e_workflows.py::test_e2e_gemini_unavailable_or_quota_fallback PASSED [ 15%]
-backend/tests/test_e2e_workflows.py::test_e2e_gemini_malformed_model_output PASSED [ 16%]
-backend/tests/test_e2e_workflows.py::test_e2e_action_history_ledger_accuracy PASSED [ 18%]
-backend/tests/test_execution.py::test_execute_add_grocery_success PASSED [ 20%]
-backend/tests/test_execution.py::test_execute_create_reminder_success PASSED [ 22%]
-backend/tests/test_execution.py::test_execute_door_lock_success PASSED   [ 23%]
-backend/tests/test_execution.py::test_cannot_execute_unapproved_action PASSED [ 25%]
-backend/tests/test_execution.py::test_cannot_execute_blocked_action PASSED [ 27%]
-backend/tests/test_gemini.py::test_gemini_adapter_availability PASSED    [ 28%]
-backend/tests/test_gemini.py::test_gemini_adapter_successful_response_mocked PASSED [ 30%]
-backend/tests/test_gemini.py::test_gemini_adapter_malformed_model_output PASSED [ 32%]
-backend/tests/test_gemini.py::test_gemini_adapter_api_error_handling PASSED [ 33%]
-backend/tests/test_gemini.py::test_parser_fallback_to_deterministic_when_gemini_fails PASSED [ 35%]
-backend/tests/test_gemini.py::test_gemini_proposals_enforce_policy_engine PASSED [ 37%]
-backend/tests/test_mcp.py::test_mcp_tool_discovery[asyncio] PASSED       [ 38%]
-backend/tests/test_mcp.py::test_mcp_call_readonly_tools[asyncio] PASSED  [ 40%]
-backend/tests/test_mcp.py::test_mcp_allowed_state_change_and_persistence[asyncio] PASSED [ 42%]
-backend/tests/test_mcp.py::test_mcp_approval_gating_cannot_be_bypassed[asyncio] PASSED [ 44%]
-backend/tests/test_mcp.py::test_mcp_blocked_action_rejected[asyncio] PASSED [ 45%]
-backend/tests/test_mcp.py::test_mcp_undo_restores_prior_state[asyncio] PASSED [ 47%]
-backend/tests/test_policy.py::test_add_grocery_item_allowed PASSED       [ 49%]
-backend/tests/test_policy.py::test_add_grocery_bulk_requires_approval PASSED [ 50%]
-backend/tests/test_policy.py::test_add_grocery_invalid_name_blocked PASSED [ 52%]
-backend/tests/test_policy.py::test_add_grocery_negative_quantity_blocked PASSED [ 54%]
-backend/tests/test_policy.py::test_create_reminder_allowed PASSED        [ 55%]
-backend/tests/test_policy.py::test_create_reminder_missing_title_blocked PASSED [ 57%]
-backend/tests/test_policy.py::test_create_reminder_missing_schedule_blocked PASSED [ 59%]
+backend/tests/test_api.py::test_cors_preflight_for_deployed_vercel_origins PASSED [ 10%]
+backend/tests/test_e2e_workflows.py::test_e2e_grocery_workflow_allow_execute_undo_invariants PASSED [ 11%]
+backend/tests/test_e2e_workflows.py::test_e2e_door_unlock_require_approval_gate PASSED [ 13%]
+backend/tests/test_e2e_workflows.py::test_e2e_dangerous_request_blocked PASSED [ 15%]
+backend/tests/test_e2e_workflows.py::test_e2e_gemini_unavailable_or_quota_fallback PASSED [ 16%]
+backend/tests/test_e2e_workflows.py::test_e2e_gemini_malformed_model_output PASSED [ 18%]
+backend/tests/test_e2e_workflows.py::test_e2e_action_history_ledger_accuracy PASSED [ 20%]
+backend/tests/test_execution.py::test_execute_add_grocery_success PASSED [ 21%]
+backend/tests/test_execution.py::test_execute_create_reminder_success PASSED [ 23%]
+backend/tests/test_execution.py::test_execute_door_lock_success PASSED   [ 25%]
+backend/tests/test_execution.py::test_cannot_execute_unapproved_action PASSED [ 26%]
+backend/tests/test_execution.py::test_cannot_execute_blocked_action PASSED [ 28%]
+backend/tests/test_gemini.py::test_gemini_adapter_availability PASSED    [ 30%]
+backend/tests/test_gemini.py::test_gemini_adapter_successful_response_mocked PASSED [ 31%]
+backend/tests/test_gemini.py::test_gemini_adapter_malformed_model_output PASSED [ 33%]
+backend/tests/test_gemini.py::test_gemini_adapter_api_error_handling PASSED [ 35%]
+backend/tests/test_parser_fallback_to_deterministic_when_gemini_fails PASSED [ 36%]
+backend/tests/test_gemini.py::test_gemini_proposals_enforce_policy_engine PASSED [ 38%]
+backend/tests/test_mcp.py::test_mcp_tool_discovery[asyncio] PASSED       [ 40%]
+backend/tests/test_mcp.py::test_mcp_call_readonly_tools[asyncio] PASSED  [ 41%]
+backend/tests/test_mcp.py::test_mcp_allowed_state_change_and_persistence[asyncio] PASSED [ 43%]
+backend/tests/test_mcp.py::test_mcp_approval_gating_cannot_be_bypassed[asyncio] PASSED [ 45%]
+backend/tests/test_mcp.py::test_mcp_blocked_action_rejected[asyncio] PASSED [ 46%]
+backend/tests/test_mcp.py::test_mcp_undo_restores_prior_state[asyncio] PASSED [ 48%]
+backend/tests/test_policy.py::test_add_grocery_item_allowed PASSED       [ 50%]
+backend/tests/test_policy.py::test_add_grocery_bulk_requires_approval PASSED [ 51%]
+backend/tests/test_policy.py::test_add_grocery_invalid_name_blocked PASSED [ 53%]
+backend/tests/test_policy.py::test_add_grocery_negative_quantity_blocked PASSED [ 55%]
+backend/tests/test_policy.py::test_create_reminder_allowed PASSED        [ 56%]
+backend/tests/test_policy.py::test_create_reminder_missing_title_blocked PASSED [ 58%]
+backend/tests/test_policy.py::test_create_reminder_missing_schedule_blocked PASSED [ 60%]
 backend/tests/test_policy.py::test_door_lock_requires_approval PASSED    [ 61%]
-backend/tests/test_policy.py::test_door_lock_unknown_location_blocked PASSED [ 62%]
-backend/tests/test_policy.py::test_door_lock_invalid_state_blocked PASSED [ 64%]
+backend/tests/test_policy.py::test_door_lock_unknown_location_blocked PASSED [ 63%]
+backend/tests/test_policy.py::test_door_lock_invalid_state_blocked PASSED [ 65%]
 backend/tests/test_policy.py::test_dangerous_operations_strictly_blocked PASSED [ 66%]
-backend/tests/test_policy.py::test_unknown_tool_strictly_blocked PASSED  [ 67%]
-backend/tests/test_safety_simulator.py::test_valid_grocery_simulation_preserves_real_db PASSED [ 69%]
+backend/tests/test_policy.py::test_unknown_tool_strictly_blocked PASSED  [ 68%]
+backend/tests/test_safety_simulator.py::test_valid_grocery_simulation_preserves_real_db PASSED [ 70%]
 backend/tests/test_safety_simulator.py::test_valid_reminder_simulation_isolated PASSED [ 71%]
-backend/tests/test_safety_simulator.py::test_simulated_door_action_preserves_approval_requirement PASSED [ 72%]
-backend/tests/test_safety_simulator.py::test_blocked_destructive_request_remains_blocked PASSED [ 74%]
+backend/tests/test_safety_simulator.py::test_simulated_door_action_preserves_approval_requirement PASSED [ 73%]
+backend/tests/test_safety_simulator.py::test_blocked_destructive_request_remains_blocked PASSED [ 75%]
 backend/tests/test_safety_simulator.py::test_invalid_parameters_produce_clear_validation_result PASSED [ 76%]
-backend/tests/test_safety_simulator.py::test_simulated_db_failures_do_not_damage_real_db PASSED [ 77%]
-backend/tests/test_safety_simulator.py::test_supported_action_marked_reversible_only_after_state_comparison PASSED [ 79%]
+backend/tests/test_safety_simulator.py::test_simulated_db_failures_do_not_damage_real_db PASSED [ 78%]
+backend/tests/test_safety_simulator.py::test_supported_action_marked_reversible_only_after_state_comparison PASSED [ 80%]
 backend/tests/test_safety_simulator.py::test_failed_rollback_produces_honest_failure_status PASSED [ 81%]
 backend/tests/test_safety_simulator.py::test_approval_expiration_honestly_reported_as_unsupported PASSED [ 83%]
-backend/tests/test_safety_simulator.py::test_continuing_to_execution_reruns_policy_and_authorization PASSED [ 84%]
+backend/tests/test_safety_simulator.py::test_continuing_to_execution_reruns_policy_and_authorization PASSED [ 85%]
 backend/tests/test_safety_simulator.py::test_blocked_action_cannot_be_executed_after_simulation PASSED [ 86%]
 backend/tests/test_safety_simulator.py::test_safety_simulate_api_schema PASSED [ 88%]
-backend/tests/test_safety_simulator.py::test_state_conflict_warning_for_redundant_door_lock PASSED [ 89%]
+backend/tests/test_safety_simulator.py::test_state_conflict_warning_for_redundant_door_lock PASSED [ 90%]
 backend/tests/test_safety_simulator.py::test_bulk_purchase_triggers_medium_risk_and_approval PASSED [ 91%]
 backend/tests/test_undo.py::test_undo_add_grocery PASSED                 [ 93%]
-backend/tests/test_undo.py::test_undo_door_lock_restores_previous_state PASSED [ 94%]
+backend/tests/test_undo.py::test_undo_door_lock_restores_previous_state PASSED [ 95%]
 backend/tests/test_undo.py::test_cannot_undo_twice PASSED                [ 96%]
 backend/tests/test_undo.py::test_cannot_undo_unexecuted_action PASSED    [ 98%]
 backend/tests/test_undo.py::test_cannot_undo_non_reversible_action PASSED [100%]
 
-======================== 59 passed, 1 warning in 8.63s ========================
+======================== 60 passed, 1 warning in 9.57s ========================
 ```
 
 ---
 
-## Cloud Deployment (Render & Railway)
+## Cloud Deployment (Vercel & Render)
 
-UNDO is pre-configured for automated 1-click cloud deployment via **Render Blueprint** ([`render.yaml`](render.yaml)) and **Railway** ([`railway.json`](railway.json)) using a multi-stage Docker build:
+UNDO is pre-configured and live across **Vercel** and **Render**:
 
-- **Full Deployment Guide**: [docs/deployment.md](docs/deployment.md)
-- **Deploy to Render**: Connect `sairamareddy2/UNDO` via Render Blueprint; it automatically builds the React 19 frontend and runs FastAPI + MCP with free HTTPS.
-- **Deploy to Railway**: Connect repository via Railway New Project &rarr; deploy instantly with automatic domain generation.
-- **Run with Docker**:
+- **Live Production Frontend (Vercel)**: [https://undo-q4bgl83d3-ramakrishna2.vercel.app/](https://undo-q4bgl83d3-ramakrishna2.vercel.app/)
+- **Live Production Backend (Render)**: [https://undo-governance-engine.onrender.com](https://undo-governance-engine.onrender.com)
+- **Interactive Swagger Documentation**: [https://undo-governance-engine.onrender.com/docs](https://undo-governance-engine.onrender.com/docs)
+- **Deployment & Architecture Guide**: [docs/deployment.md](docs/deployment.md)
+- **Render Configuration**: [`render.yaml`](render.yaml) for automated container builds and zero-downtime deploys.
+- **Vercel Configuration**: [`vercel.json`](vercel.json) with client-side SPA routing and defense-in-depth edge API rewrites.
+- **Docker Compose (Local/VPS)**:
   ```bash
   docker compose up --build
   ```

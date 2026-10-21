@@ -102,6 +102,7 @@ def test_blocked_intent_creation(client):
 def test_cors_preflight_for_deployed_vercel_origins(client):
     """Ensure deployed Vercel origins pass preflight CORS checks without wildcard origin credentials."""
     for origin in [
+        "https://undo-q4bgl83d3-ramakrishna2.vercel.app",
         "https://undo-gi2b.vercel.app",
         "https://undo-zeta-virid.vercel.app",
         "https://undo-preview-deploy.vercel.app",

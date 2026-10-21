@@ -14,6 +14,7 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
+        "https://undo-q4bgl83d3-ramakrishna2.vercel.app",
         "https://undo-gi2b.vercel.app",
         "https://undo-zeta-virid.vercel.app",
     ]

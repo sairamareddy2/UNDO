@@ -41,3 +41,5 @@ Thumbs.db
 artifacts/raw_video/
 artifacts/audio/
 artifacts/*.wav
+artifacts/*.mp4
+*.mp4
